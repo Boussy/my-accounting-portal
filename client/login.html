@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Connexion | FinExpert Comptabilité</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <style>
+    .bg-custom-red {
+      background-color: #9a1f40;
+    }
+    .text-custom-red {
+      color: #9a1f40;
+    }
+    .border-custom-red {
+      border-color: #9a1f40;
+    }
+    .hover-custom-red:hover {
+      background-color: #7a1930;
+    }
+    .gradient-header {
+      background: linear-gradient(to right, #9a1f40, #c13c54);
+    }
+    .gradient-bg {
+      background: linear-gradient(135deg, #f5f7fa 0%, #eef2f7 100%);
+    }
+    .shadow-custom {
+      box-shadow: 0 10px 25px -5px rgba(154, 31, 64, 0.1), 0 8px 10px -6px rgba(154, 31, 64, 0.05);
+    }
+    .focus-custom:focus {
+      border-color: #9a1f40;
+      box-shadow: 0 0 0 3px rgba(154, 31, 64, 0.2);
+    }
+    .tab-active {
+      border-bottom: 3px solid #9a1f40;
+      color: #9a1f40;
+    }
+  </style>
+</head>
+<body class="flex flex-col items-center justify-center min-h-screen gradient-bg">
+  <div class="w-full max-w-md px-6 py-8">
+    <div class="mb-8 text-center">
+      <div class="flex items-center justify-center mb-4">
+        <i class="fas fa-chart-line text-4xl text-custom-red mr-3"></i>
+        <h1 class="text-2xl font-bold text-gray-800">FinExpert Comptabilité</h1>
+      </div>
+      <p class="text-gray-600">Votre partenaire de confiance en comptabilité</p>
+    </div>
+    
+    <div class="bg-white rounded-lg shadow-custom w-full overflow-hidden">
+      <!-- Onglets de sélection du type de connexion -->
+      <div class="flex border-b border-gray-200">
+        <button id="client-tab" class="flex-1 py-4 px-6 font-medium text-center transition-all focus:outline-none tab-active" onclick="switchTab('client')">
+          <i class="fas fa-user mr-2"></i>Client
+        </button>
+        <button id="professionnel-tab" class="flex-1 py-4 px-6 font-medium text-gray-500 text-center transition-all focus:outline-none" onclick="switchTab('professionnel')">
+          <i class="fas fa-briefcase mr-2"></i>Professionnel
+        </button>
+      </div>
+
+      <div class="p-8">
+        <h2 class="text-2xl font-semibold mb-6 text-center text-custom-red">
+          <span id="login-title">Connexion Client</span>
+        </h2>
+        
+        <form id="login-form">
+          <input type="hidden" id="userType" name="userType" value="client">
+          
+          <div class="mb-5">
+            <label class="block mb-2 text-sm font-medium text-gray-700">Email</label>
+            <div class="relative">
+              <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <i class="fas fa-envelope text-gray-400"></i>
+              </div>
+              <input type="email" name="email" class="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-custom-red focus:border-custom-red transition" placeholder="votre@email.com" required>
+            </div>
+          </div>
+          
+          <div class="mb-6">
+            <label class="block mb-2 text-sm font-medium text-gray-700">Mot de passe</label>
+            <div class="relative">
+              <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <i class="fas fa-lock text-gray-400"></i>
+              </div>
+              <input type="password" name="password" class="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-custom-red focus:border-custom-red transition" placeholder="********" required>
+            </div>
+            <div class="flex justify-end mt-2">
+              <a href="forgot_password.html" class="text-sm text-custom-red hover:underline">Mot de passe oublié ?</a>
+            </div>
+          </div>
+          
+          <button type="submit" class="w-full bg-custom-red hover:bg-red-700 text-white py-3 px-4 rounded-md transition-colors duration-200 flex items-center justify-center">
+            <i class="fas fa-sign-in-alt mr-2"></i> Se connecter
+          </button>
+        </form>
+        
+        <div class="mt-6 text-center">
+          <p class="text-gray-600 text-sm">Vous n'avez pas de compte ?</p>
+          <a href="register.html" class="text-custom-red hover:underline text-sm font-medium">Créer un compte</a>
+        </div>
+      </div>
+    </div>
+    
+    <div class="mt-6 text-center text-sm text-gray-600">
+      <p>© 2025 FinExpert Comptabilité. Tous droits réservés.</p>
+      <div class="mt-2 flex justify-center space-x-4">
+        <a href="#" class="hover:text-custom-red transition">Assistance</a>
+        <a href="#" class="hover:text-custom-red transition">Politique de confidentialité</a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Gestion des onglets client/professionnel
+    function switchTab(userType) {
+      // Mise à jour de l'onglet actif
+      document.getElementById('client-tab').classList.toggle('tab-active', userType === 'client');
+      document.getElementById('client-tab').classList.toggle('text-gray-500', userType !== 'client');
+      document.getElementById('professionnel-tab').classList.toggle('tab-active', userType === 'professionnel');
+      document.getElementById('professionnel-tab').classList.toggle('text-gray-500', userType !== 'professionnel');
+      
+      // Mise à jour du titre
+      document.getElementById('login-title').textContent = 
+        userType === 'client' ? 'Connexion Client' : 'Connexion Professionnel';
+      
+      // Mise à jour du champ caché pour le type d'utilisateur
+      document.getElementById('userType').value = userType;
+    }
+    
+    // Gestion du formulaire de connexion
+    document.getElementById('login-form').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      
+      // Récupération des données du formulaire
+      const userType = document.getElementById('userType').value;
+      const email = this.elements['email'].value;
+      const password = this.elements['password'].value;
+      
+      // Message de chargement
+      const messageEl = document.createElement('p');
+      messageEl.id = 'message';
+      messageEl.className = 'text-sm text-center mt-4 text-gray-600';
+      messageEl.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Connexion en cours...';
+      
+      // Supprimer le message précédent s'il existe
+      const oldMessage = document.getElementById('message');
+      if (oldMessage) {
+        oldMessage.remove();
+      }
+      
+      // Ajouter le nouveau message
+      this.parentNode.insertBefore(messageEl, document.querySelector('.mt-6.text-center'));
+      
+      try {
+        const res = await fetch('http://localhost:3000/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password, userType })
+        });
+        
+        const data = await res.json();
+        
+        if (res.ok) {
+          // Stocker le token dans le localStorage
+          localStorage.setItem('authToken', data.token);
+          localStorage.setItem('userRole', data.role);
+          
+          // Informer l'utilisateur
+          messageEl.innerHTML = '<i class="fas fa-check-circle mr-2"></i> Connexion réussie. Redirection...';
+          messageEl.className = 'text-sm text-center mt-4 text-green-600';
+          
+          // Rediriger en fonction du rôle RÉEL de l'utilisateur (et non pas l'onglet sélectionné)
+          setTimeout(() => {
+            if (data.role === 'client') {
+              window.location.href = 'dashboard_client.html';
+            } else if (data.role === 'professionnel') {
+              window.location.href = 'dashboard_comptable.html';
+            }
+          }, 1000);
+        } else {
+          // Gestion spéciale des erreurs de correspondance de rôle
+          if (data.errorType === 'role_mismatch' && data.actualRole) {
+            // Si l'utilisateur essaie de se connecter au mauvais portail, afficher un message plus explicite
+            const correctTab = data.actualRole === 'client' ? 'Client' : 'Professionnel';
+            const correctLink = data.actualRole === 'client' ? 'client' : 'professionnel';
+            
+            messageEl.innerHTML = `<i class="fas fa-exclamation-triangle mr-2"></i> 
+              Vous êtes un utilisateur de type <strong>${data.actualRole}</strong>.<br>
+              Veuillez vous connecter via l'onglet <strong>${correctTab}</strong> ou 
+              <a href="#" onclick="switchTab('${correctLink}'); return false;" class="underline text-custom-red">cliquez ici</a>.`;
+          } else {
+            // Autres erreurs
+            messageEl.innerHTML = `<i class="fas fa-exclamation-circle mr-2"></i> ${data.message || 'Erreur de connexion'}`;
+          }
+          messageEl.className = 'text-sm text-center mt-4 text-red-600';
+        }
+      } catch (err) {
+        // Erreur de connexion
+        messageEl.innerHTML = '<i class="fas fa-times-circle mr-2"></i> Erreur de connexion au serveur';
+        messageEl.className = 'text-sm text-center mt-4 text-red-600';
+      }
+    });
+  </script>
+</body>
+</html>

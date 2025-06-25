@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Tableau de bord Client | FinExpert Comptabilité</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <style>
+    .bg-custom-red {
+      background-color: #9a1f40;
+    }
+    .text-custom-red {
+      color: #9a1f40;
+    }
+    .border-custom-red {
+      border-color: #9a1f40;
+    }
+    .hover-custom-red:hover {
+      background-color: #7a1930;
+    }
+    .gradient-header {
+      background: linear-gradient(to right, #9a1f40, #c13c54);
+    }
+    .gradient-bg {
+      background: linear-gradient(135deg, #f5f7fa 0%, #eef2f7 100%);
+    }
+    .shadow-custom {
+      box-shadow: 0 10px 25px -5px rgba(154, 31, 64, 0.1), 0 8px 10px -6px rgba(154, 31, 64, 0.05);
+    }
+    .focus-custom:focus {
+      border-color: #9a1f40;
+      box-shadow: 0 0 0 3px rgba(154, 31, 64, 0.2);
+    }
+    .card-hover:hover {
+      transform: translateY(-5px);
+      transition: transform 0.3s ease;
+    }
+  </style>
+</head>
+<body class="gradient-bg min-h-screen pb-12">
+  <script>
+    // Vérification de sécurité - Uniquement pour les clients
+    (function() {
+      const userRole = localStorage.getItem('userRole');
+      const authToken = localStorage.getItem('authToken');
+      
+      // Si pas de token ou pas de rôle, rediriger vers la page de connexion
+      if (!authToken || !userRole) {
+        window.location.href = 'login.html';
+        return;
+      }
+      
+      // Si le rôle n'est pas 'client', accès refusé
+      if (userRole !== 'client') {
+        alert('Accès non autorisé. Ce tableau de bord est réservé aux clients.');
+        window.location.href = 'login.html';
+        return;
+      }
+    })();
+  </script>
+  
+  <div class="gradient-header text-white p-4 shadow-md">
+    <div class="max-w-6xl mx-auto flex justify-between items-center">
+      <div class="flex items-center">
+        <i class="fas fa-chart-line text-2xl mr-3"></i>
+        <h1 class="text-xl font-bold">FinExpert Comptabilité</h1>
+      </div>
+      <div class="flex items-center space-x-4">
+        <a href="#" class="hover:text-gray-200 transition flex items-center">
+          <div class="w-8 h-8 rounded-full bg-white bg-opacity-20 flex items-center justify-center mr-1">
+            <i class="far fa-bell text-lg"></i>
+          </div>
+        </a>
+        <a href="#" class="hover:text-gray-200 transition flex items-center">
+          <div class="w-8 h-8 rounded-full bg-white bg-opacity-20 flex items-center justify-center mr-1">
+            <i class="far fa-user-circle text-lg"></i>
+          </div>
+          <span>Mon compte</span>
+        </a>
+        <a href="login.html" class="hover:text-gray-200 transition flex items-center">
+          <i class="fas fa-sign-out-alt mr-1"></i>
+          <span>Déconnexion</span>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <div class="max-w-6xl mx-auto mt-8 px-4">
+    <div class="bg-white rounded-lg shadow-custom overflow-hidden">
+      <div class="border-b border-gray-200 p-8">
+        <div class="flex items-center justify-between">
+          <div>
+            <h2 class="text-3xl font-semibold text-custom-red">Bienvenue, Client</h2>
+            <p class="text-gray-600 mt-2">Gérez vos documents et suivez votre dossier comptable</p>
+          </div>
+          <div class="hidden md:block">
+            <div class="text-right">
+              <p class="text-sm text-gray-500">Date du jour</p>
+              <p class="text-xl font-medium">24 juin 2025</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid md:grid-cols-3 gap-6 p-8">
+        <div class="bg-white p-6 rounded-lg shadow-custom border border-gray-100 hover:shadow-lg transition-all card-hover">
+          <div class="flex items-center">
+            <div class="rounded-full bg-red-50 p-4">
+              <i class="fas fa-file-invoice text-2xl text-custom-red"></i>
+            </div>
+            <div class="ml-5">
+              <p class="text-sm font-medium text-gray-500 uppercase tracking-wide">Documents</p>
+              <div class="flex items-end">
+                <p class="text-2xl font-bold">12</p>
+                <p class="text-green-600 text-sm ml-2 font-medium">+2 cette semaine</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="bg-white p-6 rounded-lg shadow-custom border border-gray-100 hover:shadow-lg transition-all card-hover">
+          <div class="flex items-center">
+            <div class="rounded-full bg-red-50 p-4">
+              <i class="fas fa-tasks text-2xl text-custom-red"></i>
+            </div>
+            <div class="ml-5">
+              <p class="text-sm font-medium text-gray-500 uppercase tracking-wide">En traitement</p>
+              <div class="flex items-end">
+                <p class="text-2xl font-bold">3</p>
+                <p class="text-amber-600 text-sm ml-2 font-medium">Mise à jour récente</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="bg-white p-6 rounded-lg shadow-custom border border-gray-100 hover:shadow-lg transition-all card-hover">
+          <div class="flex items-center">
+            <div class="rounded-full bg-red-50 p-4">
+              <i class="fas fa-check-circle text-2xl text-custom-red"></i>
+            </div>
+            <div class="ml-5">
+              <p class="text-sm font-medium text-gray-500 uppercase tracking-wide">Validés</p>
+              <div class="flex items-end">
+                <p class="text-2xl font-bold">9</p>
+                <p class="text-green-600 text-sm ml-2 font-medium">75% du total</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="p-8 bg-gray-50 border-t border-b border-gray-200">
+        <h3 class="text-xl font-semibold mb-4 text-gray-800 flex items-center">
+          <i class="fas fa-cloud-upload-alt mr-2 text-custom-red"></i>
+          Soumission de documents
+        </h3>
+        <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
+          <div class="flex flex-col md:flex-row md:items-end space-y-4 md:space-y-0 md:space-x-4">
+            <div class="flex-grow">
+              <label class="block mb-2 text-sm font-medium text-gray-700">Sélectionner un document :</label>
+              <div class="relative">
+                <input type="file" id="file-upload" class="block w-full text-sm text-gray-500 file:mr-4 file:py-3 file:px-5
+                  file:rounded-md file:border-0 file:text-sm file:font-medium
+                  file:bg-custom-red file:text-white hover:file:bg-red-700 cursor-pointer">
+              </div>
+              <p class="text-xs text-gray-500 mt-2">Formats acceptés : PDF, JPG, PNG (max 10 MB)</p>
+            </div>
+            <button class="bg-custom-red hover:bg-red-700 text-white py-3 px-8 rounded-md transition-colors duration-200 flex items-center justify-center shadow-sm">
+              <i class="fas fa-upload mr-2"></i> Envoyer
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Documents récents -->
+      <div class="p-8">
+        <div class="flex justify-between items-center mb-6">
+          <h3 class="text-xl font-semibold text-gray-800 flex items-center">
+            <i class="fas fa-history mr-2 text-custom-red"></i>
+            Documents récents
+          </h3>
+          <div class="relative">
+            <input type="text" placeholder="Rechercher..." class="py-2 pl-10 pr-4 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-custom-red focus:border-custom-red w-64">
+            <i class="fas fa-search absolute left-3 top-2.5 text-gray-400"></i>
+          </div>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="min-w-full divide-y divide-gray-200">
+            <thead>
+              <tr class="bg-gray-50">
+                <th scope="col" class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Document</th>
+                <th scope="col" class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date d'envoi</th>
+                <th scope="col" class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Statut</th>
+                <th scope="col" class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Action</th>
+              </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+              <tr class="hover:bg-gray-50 transition">
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <div class="flex items-center">
+                    <i class="far fa-file-pdf text-custom-red mr-3 text-lg"></i>
+                    <div>
+                      <div class="text-sm font-medium text-gray-900">Facture Mars 2025</div>
+                      <div class="text-sm text-gray-500">facture_mars.pdf • 1.3 MB</div>
+                    </div>
+                  </div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <div class="text-sm text-gray-900">15 juin 2025</div>
+                  <div class="text-xs text-gray-500">10:32</div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                    Traité
+                  </span>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                  <a href="#" class="text-custom-red hover:text-red-800 mr-4 inline-flex items-center">
+                    <i class="fas fa-eye mr-1"></i> Voir
+                  </a>
+                </td>
+              </tr>
+              <tr class="hover:bg-gray-50 transition">
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <div class="flex items-center">
+                    <i class="far fa-file-image text-custom-red mr-3 text-lg"></i>
+                    <div>
+                      <div class="text-sm font-medium text-gray-900">Reçu Fournitures</div>
+                      <div class="text-sm text-gray-500">recu_fournitures.jpg • 2.8 MB</div>
+                    </div>
+                  </div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <div class="text-sm text-gray-900">18 juin 2025</div>
+                  <div class="text-xs text-gray-500">14:15</div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
+                    En attente
+                  </span>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                  <a href="#" class="text-custom-red hover:text-red-800 mr-4 inline-flex items-center">
+                    <i class="fas fa-eye mr-1"></i> Voir
+                  </a>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="bg-gray-50 p-8 border-t border-gray-200">
+        <div class="flex flex-col md:flex-row justify-between items-center text-sm text-gray-600">
+          <div class="mb-4 md:mb-0">
+            <p>© 2025 FinExpert Comptabilité. Tous droits réservés.</p>
+          </div>
+          <div class="flex flex-wrap justify-center space-x-4">
+            <a href="#" class="hover:text-custom-red transition mb-2 md:mb-0"><i class="fas fa-headset mr-1"></i> Assistance</a>
+            <a href="#" class="hover:text-custom-red transition mb-2 md:mb-0"><i class="fas fa-shield-alt mr-1"></i> Politique de confidentialité</a>
+            <a href="#" class="hover:text-custom-red transition mb-2 md:mb-0"><i class="fas fa-gavel mr-1"></i> Mentions légales</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
