@@ -58,8 +58,660 @@
         return;
       }
     })();
+
+    // Variables pour l'API
+    const API_URL = 'http://localhost:3000';
+    let documentsData = { byDate: {}, allDocs: [] };
+    let documentStats = { total: 0, pending: 0, validated: 0 };
+    let currentPage = 1;
+    const docsPerPage = 10;
+
+    // Fonction pour charger les documents de l'utilisateur
+    async function loadUserDocuments() {
+      try {
+        const authToken = localStorage.getItem('authToken');
+        if (!authToken) return;
+
+        const response = await fetch(`${API_URL}/api/docs/mydocs`, {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${authToken}`,
+            'Content-Type': 'application/json'
+          }
+        });
+
+        if (!response.ok) {
+          throw new Error('Échec de la récupération des documents');
+        }
+
+        documentsData = await response.json();
+        
+        // Trier les documents par date (du plus récent au plus ancien)
+        const sortedDocs = [...documentsData.allDocs].sort((a, b) => {
+          return new Date(b.uploaded_at) - new Date(a.uploaded_at);
+        });
+        
+        // Paginer les données et afficher la première page
+        if (window.paginateData) {
+          const paginatedDocs = window.paginateData(sortedDocs, 1);
+          renderPaginatedDocuments(paginatedDocs);
+        } else {
+          // Fallback si la pagination n'est pas disponible
+          updateDocumentsTable();
+        }
+        
+        // Mettre à jour les statistiques
+        updateDocumentStats();
+      } catch (error) {
+        console.error('Erreur lors du chargement des documents:', error);
+        showNotification('Erreur lors du chargement des documents', true);
+      }
+    }
+
+    // Fonction pour mettre à jour la table des documents
+    function updateDocumentsTable(paginatedDocs = null) {
+      const tableBody = document.getElementById('documents-table-body');
+      if (!tableBody) return;
+
+      // Vider la table
+      tableBody.innerHTML = '';
+
+      // Trier les documents par date (du plus récent au plus ancien)
+      const sortedDocs = [...documentsData.allDocs].sort((a, b) => {
+        return new Date(b.uploaded_at) - new Date(a.uploaded_at);
+      });
+      
+      // Appliquer la pagination si ce n'est pas déjà fait
+      const docsToShow = paginatedDocs || window.paginateData ? window.paginateData(sortedDocs) : sortedDocs;
+
+      // Afficher un message si aucun document n'est trouvé
+      if (docsToShow.length === 0) {
+        const emptyRow = document.createElement('tr');
+        emptyRow.innerHTML = `
+          <td colspan="4" class="px-6 py-8 text-center text-gray-500">
+            <i class="fas fa-folder-open text-gray-300 text-4xl mb-3"></i>
+            <p>Aucun document n'a été trouvé</p>
+            <p class="text-sm mt-1">Modifiez vos critères de recherche ou soumettez de nouveaux documents</p>
+          </td>
+        `;
+        tableBody.appendChild(emptyRow);
+        return;
+      }
+
+      // Ajouter chaque document dans la table
+      docsToShow.forEach(doc => {
+        const row = document.createElement('tr');
+        row.className = 'hover:bg-gray-50 transition';
+        
+        // Formater la date
+        const uploadDate = new Date(doc.uploaded_at);
+        const formattedDate = uploadDate.toLocaleDateString('fr-FR', {
+          day: 'numeric',
+          month: 'long',
+          year: 'numeric'
+        });
+        
+        const formattedTime = uploadDate.toLocaleTimeString('fr-FR', {
+          hour: '2-digit',
+          minute: '2-digit'
+        });
+
+        // Déterminer le statut du document
+        let status = doc.status || 'pending'; // 'pending', 'processing', 'validated', 'urgent'
+        let statusText = 'En attente';
+        let statusClass = 'bg-yellow-100 text-yellow-800';
+        
+        if (status === 'processing') {
+          statusText = 'En traitement';
+          statusClass = 'bg-blue-100 text-blue-800';
+        } else if (status === 'validated') {
+          statusText = 'Validé';
+          statusClass = 'bg-green-100 text-green-800';
+        } else if (status === 'urgent') {
+          statusText = 'Urgent';
+          statusClass = 'bg-red-100 text-red-800';
+        }
+
+        // Déterminer l'icône en fonction de l'extension du fichier
+        const extension = doc.filename.split('.').pop().toLowerCase();
+        let fileIcon = 'far fa-file';
+        
+        if (['pdf'].includes(extension)) {
+          fileIcon = 'far fa-file-pdf';
+        } else if (['doc', 'docx'].includes(extension)) {
+          fileIcon = 'far fa-file-word';
+        } else if (['xls', 'xlsx'].includes(extension)) {
+          fileIcon = 'far fa-file-excel';
+        } else if (['jpg', 'jpeg', 'png', 'gif'].includes(extension)) {
+          fileIcon = 'far fa-file-image';
+        }
+
+        row.innerHTML = `
+          <td class="px-6 py-4 whitespace-nowrap">
+            <div class="flex items-center">
+              <i class="${fileIcon} text-custom-red mr-2"></i>
+              <div class="text-sm text-gray-900">${doc.filename}</div>
+            </div>
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap">
+            <div class="text-sm text-gray-900">${formattedDate}</div>
+            <div class="text-xs text-gray-500">${formattedTime}</div>
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap">
+            <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${statusClass}">
+              ${statusText}
+            </span>
+            ${status === 'validated' ? '<i class="fas fa-check-circle text-green-500 ml-2"></i>' : ''}
+            ${status === 'urgent' ? '<i class="fas fa-exclamation-circle text-red-500 ml-2"></i>' : ''}
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+            <a href="#" class="text-custom-red hover:text-red-800 mr-4 inline-flex items-center preview-document" data-doc-id="${doc.id}" data-filename="${doc.filename}">
+              <i class="fas fa-eye mr-1"></i> Voir
+            </a>
+          </td>
+        `;
+        
+        tableBody.appendChild(row);
+      });
+    }
+    
+    // Fonction pour mettre à jour les statistiques des documents
+    function updateDocumentStats() {
+      // Compter le nombre total de documents
+      documentStats.total = documentsData.allDocs.length;
+      
+      // Compter les documents par statut
+      documentStats.pending = documentsData.allDocs.filter(doc => !doc.status || doc.status === 'pending').length;
+      documentStats.processing = documentsData.allDocs.filter(doc => doc.status === 'processing').length;
+      documentStats.validated = documentsData.allDocs.filter(doc => doc.status === 'validated').length;
+      documentStats.urgent = documentsData.allDocs.filter(doc => doc.status === 'urgent').length;
+      
+      // Mettre à jour les compteurs dans l'interface
+      document.getElementById('total-docs').textContent = documentStats.total;
+      document.getElementById('processing-docs').textContent = documentStats.pending + documentStats.processing;
+      document.getElementById('validated-docs').textContent = documentStats.validated;
+      
+      // Mettre à jour les pourcentages ou textes supplémentaires si nécessaire
+      if (documentStats.total > 0) {
+        const validatedPercent = Math.round((documentStats.validated / documentStats.total) * 100);
+        document.getElementById('validated-percent').textContent = `${validatedPercent}% du total`;
+        
+        // Mettre à jour le texte à côté des documents en traitement
+        const urgentText = documentStats.urgent > 0 ? `dont ${documentStats.urgent} urgents` : 'En attente';
+        document.querySelector('#processing-docs + p').textContent = urgentText;
+      }
+    }
+
+    // Fonction pour afficher une notification
+    function showNotification(message, isError = false) {
+      const notification = document.getElementById('notification');
+      const notificationMessage = document.getElementById('notification-message');
+      
+      if (!notification || !notificationMessage) return;
+      
+      // Définir le message et le style
+      notificationMessage.textContent = message;
+      
+      // Réinitialiser les classes
+      notification.classList.remove('bg-green-100', 'text-green-800', 'bg-red-100', 'text-red-800');
+      
+      if (isError) {
+        notification.classList.add('bg-red-100', 'text-red-800');
+      } else {
+        notification.classList.add('bg-green-100', 'text-green-800');
+      }
+      
+      // Afficher la notification avec animation
+      notification.classList.remove('hidden');
+      
+      // Trigger reflow pour permettre la transition
+      // eslint-disable-next-line no-unused-expressions
+      notification.offsetHeight;
+      
+      notification.classList.add('opacity-100');
+      
+      // Masquer après 3 secondes
+      setTimeout(() => {
+        notification.classList.remove('opacity-100');
+        setTimeout(() => {
+          notification.classList.add('hidden');
+        }, 300);
+      }, 3000);
+    }
+
+    // Fonction pour vérifier périodiquement s'il y a des mises à jour de documents
+    async function checkForUpdates() {
+      const lastUpdate = localStorage.getItem('lastDocUpdate');
+      const now = Date.now();
+      
+      // Vérifier toutes les 30 secondes
+      if (!lastUpdate || (now - parseInt(lastUpdate)) > 30000) {
+        const previousDocs = JSON.stringify(documentsData.allDocs);
+        
+        await loadUserDocuments();
+        
+        // Comparer avec l'état précédent
+        const newDocs = JSON.stringify(documentsData.allDocs);
+        
+        if (previousDocs !== newDocs && documentsData.allDocs.length > 0) {
+          // Vérifier les changements de statut
+          const parsedPrevious = JSON.parse(previousDocs);
+          
+          const updatedDocs = documentsData.allDocs.filter(doc => {
+            const prevDoc = parsedPrevious.find(p => p.id === doc.id);
+            return prevDoc && prevDoc.status !== doc.status;
+          });
+          
+          // Afficher une notification pour chaque document mis à jour
+          updatedDocs.forEach(doc => {
+            let statusText = "mis à jour";
+            
+            if (doc.status === 'validated') {
+              statusText = "validé";
+            } else if (doc.status === 'processing') {
+              statusText = "en cours de traitement";
+            } else if (doc.status === 'urgent') {
+              statusText = "marqué comme urgent";
+            }
+            
+            showNotification(`Document "${doc.filename}" ${statusText}`);
+          });
+        }
+        
+        localStorage.setItem('lastDocUpdate', now.toString());
+      }
+    }
+    
+    // Fonction pour rendre les documents paginés
+    function renderPaginatedDocuments(paginatedDocs) {
+      const tableBody = document.getElementById('documents-table-body');
+      if (!tableBody) return;
+
+      // Vider la table
+      tableBody.innerHTML = '';
+      
+      // Afficher un message si aucun document n'est trouvé
+      if (paginatedDocs.length === 0) {
+        const emptyRow = document.createElement('tr');
+        emptyRow.innerHTML = `
+          <td colspan="4" class="px-6 py-8 text-center text-gray-500">
+            <i class="fas fa-folder-open text-gray-300 text-4xl mb-3"></i>
+            <p>Aucun document n'a été trouvé</p>
+            <p class="text-sm mt-1">Modifiez vos critères de recherche ou soumettez de nouveaux documents</p>
+          </td>
+        `;
+        tableBody.appendChild(emptyRow);
+        return;
+      }
+
+      // Ajouter chaque document dans la table
+      paginatedDocs.forEach(doc => {
+        const row = document.createElement('tr');
+        row.className = 'hover:bg-gray-50 transition';
+        
+        // Formater la date
+        const uploadDate = new Date(doc.uploaded_at);
+        const formattedDate = uploadDate.toLocaleDateString('fr-FR', {
+          day: 'numeric',
+          month: 'long',
+          year: 'numeric'
+        });
+        
+        const formattedTime = uploadDate.toLocaleTimeString('fr-FR', {
+          hour: '2-digit',
+          minute: '2-digit'
+        });
+
+        // Déterminer le statut du document
+        let status = doc.status || 'pending';
+        let statusText = 'En attente';
+        let statusClass = 'bg-yellow-100 text-yellow-800';
+        
+        if (status === 'processing') {
+          statusText = 'En traitement';
+          statusClass = 'bg-blue-100 text-blue-800';
+        } else if (status === 'validated') {
+          statusText = 'Validé';
+          statusClass = 'bg-green-100 text-green-800';
+        } else if (status === 'urgent') {
+          statusText = 'Urgent';
+          statusClass = 'bg-red-100 text-red-800';
+        }
+
+        // Déterminer l'icône en fonction de l'extension du fichier
+        const extension = doc.filename.split('.').pop().toLowerCase();
+        let fileIcon = 'far fa-file';
+        
+        if (['pdf'].includes(extension)) {
+          fileIcon = 'far fa-file-pdf';
+        } else if (['doc', 'docx'].includes(extension)) {
+          fileIcon = 'far fa-file-word';
+        } else if (['xls', 'xlsx'].includes(extension)) {
+          fileIcon = 'far fa-file-excel';
+        } else if (['jpg', 'jpeg', 'png', 'gif'].includes(extension)) {
+          fileIcon = 'far fa-file-image';
+        }
+
+        row.innerHTML = `
+          <td class="px-6 py-4 whitespace-nowrap">
+            <div class="flex items-center">
+              <i class="${fileIcon} text-custom-red mr-2"></i>
+              <div class="text-sm text-gray-900">${doc.filename}</div>
+            </div>
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap">
+            <div class="text-sm text-gray-900">${formattedDate}</div>
+            <div class="text-xs text-gray-500">${formattedTime}</div>
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap">
+            <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${statusClass}">
+              ${statusText}
+            </span>
+            ${status === 'validated' ? '<i class="fas fa-check-circle text-green-500 ml-2"></i>' : ''}
+            ${status === 'urgent' ? '<i class="fas fa-exclamation-circle text-red-500 ml-2"></i>' : ''}
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+            <a href="#" class="text-custom-red hover:text-red-800 mr-4 inline-flex items-center preview-document" data-doc-id="${doc.id}" data-filename="${doc.filename}">
+              <i class="fas fa-eye mr-1"></i> Voir
+            </a>
+          </td>
+        `;
+        
+        tableBody.appendChild(row);
+      });
+    }
+    
+    // Fonction pour prévisualiser un document
+    async function previewDocument(docId, filename) {
+      const previewModal = document.getElementById('preview-modal');
+      const previewTitle = document.getElementById('preview-title');
+      const previewIframe = document.getElementById('preview-iframe');
+      const previewImageContainer = document.getElementById('preview-image-container');
+      const previewImage = document.getElementById('preview-image');
+      const previewLoading = document.getElementById('preview-loading');
+      const previewError = document.getElementById('preview-error');
+      const previewContent = document.getElementById('preview-content');
+      const downloadDoc = document.getElementById('download-doc');
+      
+      // Afficher la modal
+      previewModal.classList.remove('hidden');
+      document.body.style.overflow = 'hidden'; // Empêcher le défilement de la page
+      
+      // Initialiser la prévisualisation
+      previewTitle.textContent = `Prévisualisation: ${filename}`;
+      previewIframe.classList.add('hidden');
+      previewImageContainer.classList.add('hidden');
+      previewLoading.classList.remove('hidden');
+      previewError.classList.add('hidden');
+      
+      try {
+        const authToken = localStorage.getItem('authToken');
+        // Déterminer l'extension du fichier
+        const extension = filename.split('.').pop().toLowerCase();
+        
+        // Configurer le bouton de téléchargement avec une approche plus robuste
+        const downloadUrl = `${API_URL}/api/docs/download/${docId}?token=${authToken}`;
+        downloadDoc.href = downloadUrl;
+        downloadDoc.setAttribute('download', filename);
+        downloadDoc.setAttribute('rel', 'noopener noreferrer');
+        // Gestionnaire d'événement amélioré pour le téléchargement
+        downloadDoc.onclick = (e) => {
+          // Éviter la propagation pour empêcher la fermeture du modal
+          e.stopPropagation();
+          
+          // Détection des appareils iOS
+          const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+          const supportsDownload = "download" in document.createElement("a");
+          
+          // Pour iOS ou navigateurs sans support de download
+          if (isIOS || !supportsDownload) {
+            // Afficher un message d'information pour iOS
+            if (isIOS) {
+              showNotification('Le fichier va s\'ouvrir dans un nouvel onglet. Vous pourrez l\'enregistrer de là.', false);
+            }
+            
+            // Ouvrir dans un nouvel onglet
+            window.open(downloadUrl, '_blank');
+            return false;
+          }
+          
+          return true;
+        };
+        
+        // Vérifier si le format est prévisualisable
+        const previewableExtensions = ['pdf', 'jpg', 'jpeg', 'png', 'gif'];
+        const isPreviewable = previewableExtensions.includes(extension);
+        
+        if (!isPreviewable) {
+          // Afficher directement l'erreur pour les formats non supportés
+          previewLoading.classList.add('hidden');
+          previewError.classList.remove('hidden');
+          return;
+        }
+        
+        // Ajouter les paramètres d'authentification à l'URL
+        const securePreviewUrl = `${API_URL}/api/docs/preview/${docId}?token=${authToken}`;
+        
+        if (['jpg', 'jpeg', 'png', 'gif'].includes(extension)) {
+          // Pour les images, charger directement via l'URL
+          previewLoading.classList.add('hidden');
+          previewImage.src = securePreviewUrl;
+          previewImage.onload = () => {
+            previewImageContainer.classList.remove('hidden');
+          };
+          previewImage.onerror = () => {
+            previewError.classList.remove('hidden');
+          };
+        } else if (extension === 'pdf') {
+          // Pour les PDF, utiliser directement l'URL du serveur avec l'iframe
+          previewLoading.classList.add('hidden');
+          previewIframe.src = securePreviewUrl;
+          previewIframe.classList.remove('hidden');
+          
+          // Gérer les erreurs d'iframe
+          previewIframe.onerror = () => {
+            previewIframe.classList.add('hidden');
+            previewError.classList.remove('hidden');
+          };
+        } else {
+          // Autres types de fichiers non prévisualisables
+          previewLoading.classList.add('hidden');
+          previewError.classList.remove('hidden');
+        }
+      } catch (error) {
+        console.error('Erreur lors de la prévisualisation:', error);
+        previewLoading.classList.add('hidden');
+        previewError.classList.remove('hidden');
+      }
+    }
+    
+    // Fonction pour fermer la modal de prévisualisation
+    function closePreviewModal() {
+      const previewModal = document.getElementById('preview-modal');
+      const previewIframe = document.getElementById('preview-iframe');
+      const previewImage = document.getElementById('preview-image');
+      
+      // Cacher la modal
+      previewModal.classList.add('hidden');
+      document.body.style.overflow = ''; // Rétablir le défilement
+      
+      // Nettoyer les sources pour libérer la mémoire
+      previewIframe.src = '';
+      previewImage.src = '';
+    }
+
+    // Gestion du formulaire d'upload
+    document.addEventListener('DOMContentLoaded', function() {
+      // Charger les documents de l'utilisateur
+      loadUserDocuments();
+      
+      // Vérifier périodiquement les mises à jour
+      setInterval(checkForUpdates, 30000);
+      
+      // Gestionnaire pour la prévisualisation des documents
+      document.addEventListener('click', function(e) {
+        if (e.target.closest('.preview-document')) {
+          e.preventDefault();
+          const docLink = e.target.closest('.preview-document');
+          const docId = docLink.dataset.docId;
+          const filename = docLink.dataset.filename;
+          previewDocument(docId, filename);
+        }
+      });
+      
+      // Gestionnaires pour fermer la modal de prévisualisation
+      document.getElementById('close-preview').addEventListener('click', closePreviewModal);
+      document.getElementById('close-preview-btn').addEventListener('click', closePreviewModal);
+      document.getElementById('preview-modal').addEventListener('click', function(e) {
+        if (e.target === this) {
+          closePreviewModal();
+        }
+      });
+      
+
+      // Gérer la soumission du formulaire
+      const uploadForm = document.getElementById('upload-form');
+      if (uploadForm) {
+        uploadForm.addEventListener('submit', async function(e) {
+          e.preventDefault();
+          
+          const uploadBtn = document.getElementById('upload-btn');
+          const uploadMessage = document.getElementById('upload-message');
+          const messageText = document.getElementById('message-text');
+          
+          // Afficher le message de chargement
+          uploadBtn.disabled = true;
+          uploadMessage.classList.remove('hidden');
+          uploadMessage.classList.remove('text-green-600', 'text-red-600');
+          uploadMessage.classList.add('text-gray-600');
+          messageText.textContent = 'Envoi en cours...';
+          
+          // Récupérer le fichier
+          const fileInput = document.getElementById('file-upload');
+          const file = fileInput.files[0];
+          
+          if (!file) {
+            uploadMessage.classList.remove('text-gray-600');
+            uploadMessage.classList.add('text-red-600');
+            messageText.textContent = 'Veuillez sélectionner un fichier';
+            uploadBtn.disabled = false;
+            return;
+          }
+          
+          // Créer l'objet FormData pour l'envoi
+          const formData = new FormData();
+          formData.append('file', file);
+          
+          try {
+            const authToken = localStorage.getItem('authToken');
+            const response = await fetch(`${API_URL}/api/docs/upload`, {
+              method: 'POST',
+              headers: {
+                'Authorization': `Bearer ${authToken}`
+              },
+              body: formData
+            });
+            
+            // Tenter d'analyser la réponse
+            let errorMsg = 'Erreur lors de l\'envoi du document. Veuillez réessayer.';
+            
+            if (!response.ok) {
+              // Essayer de récupérer un message d'erreur du serveur
+              try {
+                const errorData = await response.json();
+                errorMsg = errorData.message || errorMsg;
+              } catch (jsonError) {
+                // Si on ne peut pas parser le JSON, utiliser le message par défaut
+                console.warn('Impossible de parser l\'erreur JSON:', jsonError);
+              }
+              throw new Error(errorMsg);
+            }
+            
+            const data = await response.json();
+            
+            // Afficher le message de succès
+            uploadMessage.classList.remove('text-gray-600', 'text-red-600');
+            uploadMessage.classList.add('text-green-600');
+            messageText.textContent = 'Document envoyé avec succès !';
+            
+            // Réinitialiser le formulaire
+            fileInput.value = '';
+            
+            // Recharger les documents pour mettre à jour la liste
+            await loadUserDocuments();
+            
+            // Faire disparaître le message après 3 secondes
+            setTimeout(() => {
+              uploadMessage.classList.add('hidden');
+            }, 3000);
+          } catch (error) {
+            console.error('Erreur lors de l\'upload:', error);
+            
+            // Afficher le message d'erreur
+            uploadMessage.classList.remove('text-gray-600', 'text-green-600');
+            uploadMessage.classList.add('text-red-600');
+            messageText.textContent = error.message || 'Erreur lors de l\'envoi du document. Veuillez réessayer.';
+          } finally {
+            // Réactiver le bouton
+            uploadBtn.disabled = false;
+          }
+        });
+      }
+    });
   </script>
   
+  <!-- Notification -->
+  <div id="notification" class="fixed top-4 right-4 z-50 px-6 py-3 rounded-lg text-sm font-medium hidden transition-opacity duration-300 opacity-0">
+    <p class="flex items-center">
+      <i class="fas fa-bell mr-2"></i>
+      <span id="notification-message"></span>
+    </p>
+  </div>
+  
+  <!-- Modal de prévisualisation -->
+  <div id="preview-modal" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 hidden">
+    <div class="bg-white rounded-lg max-w-5xl w-full max-h-screen overflow-hidden flex flex-col">
+      <div class="flex justify-between items-center p-4 border-b">
+        <h3 class="text-lg font-semibold text-gray-800" id="preview-title">Prévisualisation du document</h3>
+        <button id="close-preview" class="text-gray-500 hover:text-gray-700">
+          <i class="fas fa-times text-xl"></i>
+        </button>
+      </div>
+      <div class="flex-grow overflow-auto p-4 bg-gray-50" style="min-height: 70vh; max-height: 80vh;">
+        <div id="preview-content" class="w-full h-full flex items-center justify-center">
+          <iframe id="preview-iframe" class="w-full h-full border-0 hidden" style="min-height: 70vh;"></iframe>
+          <div id="preview-image-container" class="hidden flex items-center justify-center h-full">
+            <img id="preview-image" class="max-w-full max-h-[70vh] mx-auto object-contain" alt="Prévisualisation" />
+          </div>
+          <div id="preview-loading" class="text-center">
+            <i class="fas fa-spinner fa-spin text-custom-red text-3xl mb-2"></i>
+            <p class="text-gray-600">Chargement du document...</p>
+          </div>
+          <div id="preview-error" class="text-center hidden">
+            <i class="fas fa-exclamation-triangle text-red-500 text-3xl mb-2"></i>
+            <p class="text-gray-700">Ce type de document ne peut pas être prévisualisé.</p>
+            <p class="text-gray-500 mb-4">Vous pouvez le télécharger pour le visualiser.</p>
+            <a id="download-doc" href="#" class="mt-4 bg-custom-red hover:bg-red-700 text-white py-2 px-4 rounded flex items-center mx-auto no-underline">
+              <i class="fas fa-download mr-2"></i> Télécharger le document
+            </a>
+          </div>
+        </div>
+      </div>
+      <div class="p-4 border-t bg-gray-50 flex justify-between">
+        <div class="text-sm text-gray-500">
+          <span id="preview-file-info">Cliquez sur "Fermer" pour revenir à la liste des documents</span>
+        </div>
+        <button id="close-preview-btn" class="bg-gray-300 hover:bg-gray-400 text-gray-800 py-2 px-4 rounded">
+          Fermer
+        </button>
+      </div>
+    </div>
+  </div>
+  
+  <script src="js/document-preview.js"></script>
+  <script src="js/document-filters-client.js"></script>
+  <script src="js/document-pagination.js"></script>
+  <script src="js/date-updater.js"></script>
   <div class="gradient-header text-white p-4 shadow-md">
     <div class="max-w-6xl mx-auto flex justify-between items-center">
       <div class="flex items-center">
@@ -72,7 +724,7 @@
             <i class="far fa-bell text-lg"></i>
           </div>
         </a>
-        <a href="#" class="hover:text-gray-200 transition flex items-center">
+        <a href="mon_compte.html" class="hover:text-gray-200 transition flex items-center">
           <div class="w-8 h-8 rounded-full bg-white bg-opacity-20 flex items-center justify-center mr-1">
             <i class="far fa-user-circle text-lg"></i>
           </div>
@@ -93,11 +745,10 @@
           <div>
             <h2 class="text-3xl font-semibold text-custom-red">Bienvenue, Client</h2>
             <p class="text-gray-600 mt-2">Gérez vos documents et suivez votre dossier comptable</p>
-          </div>
-          <div class="hidden md:block">
+          </div>            <div class="hidden md:block">
             <div class="text-right">
               <p class="text-sm text-gray-500">Date du jour</p>
-              <p class="text-xl font-medium">24 juin 2025</p>
+              <p id="current-date" class="text-xl font-medium">26 juin 2025</p>
             </div>
           </div>
         </div>
@@ -112,8 +763,8 @@
             <div class="ml-5">
               <p class="text-sm font-medium text-gray-500 uppercase tracking-wide">Documents</p>
               <div class="flex items-end">
-                <p class="text-2xl font-bold">12</p>
-                <p class="text-green-600 text-sm ml-2 font-medium">+2 cette semaine</p>
+                <p id="total-docs" class="text-2xl font-bold">0</p>
+                <p class="text-green-600 text-sm ml-2 font-medium">Total</p>
               </div>
             </div>
           </div>
@@ -126,8 +777,8 @@
             <div class="ml-5">
               <p class="text-sm font-medium text-gray-500 uppercase tracking-wide">En traitement</p>
               <div class="flex items-end">
-                <p class="text-2xl font-bold">3</p>
-                <p class="text-amber-600 text-sm ml-2 font-medium">Mise à jour récente</p>
+                <p id="processing-docs" class="text-2xl font-bold">0</p>
+                <p class="text-amber-600 text-sm ml-2 font-medium">En attente</p>
               </div>
             </div>
           </div>
@@ -140,8 +791,8 @@
             <div class="ml-5">
               <p class="text-sm font-medium text-gray-500 uppercase tracking-wide">Validés</p>
               <div class="flex items-end">
-                <p class="text-2xl font-bold">9</p>
-                <p class="text-green-600 text-sm ml-2 font-medium">75% du total</p>
+                <p id="validated-docs" class="text-2xl font-bold">0</p>
+                <p id="validated-percent" class="text-green-600 text-sm ml-2 font-medium">0% du total</p>
               </div>
             </div>
           </div>
@@ -154,20 +805,25 @@
           Soumission de documents
         </h3>
         <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
-          <div class="flex flex-col md:flex-row md:items-end space-y-4 md:space-y-0 md:space-x-4">
-            <div class="flex-grow">
-              <label class="block mb-2 text-sm font-medium text-gray-700">Sélectionner un document :</label>
-              <div class="relative">
-                <input type="file" id="file-upload" class="block w-full text-sm text-gray-500 file:mr-4 file:py-3 file:px-5
-                  file:rounded-md file:border-0 file:text-sm file:font-medium
-                  file:bg-custom-red file:text-white hover:file:bg-red-700 cursor-pointer">
+          <form id="upload-form" enctype="multipart/form-data">
+            <div class="flex flex-col md:flex-row md:items-end space-y-4 md:space-y-0 md:space-x-4">
+              <div class="flex-grow">
+                <label class="block mb-2 text-sm font-medium text-gray-700">Sélectionner un document :</label>
+                <div class="relative">
+                  <input type="file" id="file-upload" name="file" class="block w-full text-sm text-gray-500 file:mr-4 file:py-3 file:px-5
+                    file:rounded-md file:border-0 file:text-sm file:font-medium
+                    file:bg-custom-red file:text-white hover:file:bg-red-700 cursor-pointer" required>
+                </div>
+                <p class="text-xs text-gray-500 mt-2">Formats acceptés : PDF, JPG, PNG, DOC, XLS (max 10 MB)</p>
               </div>
-              <p class="text-xs text-gray-500 mt-2">Formats acceptés : PDF, JPG, PNG (max 10 MB)</p>
+              <button type="submit" id="upload-btn" class="bg-custom-red hover:bg-red-700 text-white py-3 px-8 rounded-md transition-colors duration-200 flex items-center justify-center shadow-sm">
+                <i class="fas fa-upload mr-2"></i> Envoyer
+              </button>
             </div>
-            <button class="bg-custom-red hover:bg-red-700 text-white py-3 px-8 rounded-md transition-colors duration-200 flex items-center justify-center shadow-sm">
-              <i class="fas fa-upload mr-2"></i> Envoyer
-            </button>
-          </div>
+            <div id="upload-message" class="mt-3 text-sm hidden">
+              <p class="flex items-center"><i class="fas fa-spinner fa-spin mr-2"></i> <span id="message-text">Envoi en cours...</span></p>
+            </div>
+          </form>
         </div>
       </div>
 
@@ -178,9 +834,34 @@
             <i class="fas fa-history mr-2 text-custom-red"></i>
             Documents récents
           </h3>
-          <div class="relative">
-            <input type="text" placeholder="Rechercher..." class="py-2 pl-10 pr-4 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-custom-red focus:border-custom-red w-64">
-            <i class="fas fa-search absolute left-3 top-2.5 text-gray-400"></i>
+          <div class="flex flex-wrap md:flex-row space-y-2 md:space-y-0 md:space-x-4">
+            <div class="relative">
+              <select id="status-filter" class="pl-10 pr-4 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-custom-red focus:border-custom-red appearance-none">
+                <option value="">Tous les statuts</option>
+                <option value="pending">En attente</option>
+                <option value="processing">En traitement</option>
+                <option value="validated">Validé</option>
+                <option value="urgent">Urgent</option>
+              </select>
+              <i class="fas fa-filter absolute left-3 top-2.5 text-gray-400"></i>
+            </div>
+            <div class="relative">
+              <select id="doctype-filter" class="pl-10 pr-4 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-custom-red focus:border-custom-red appearance-none">
+                <option value="">Tous les types</option>
+                <option value="pdf">PDF</option>
+                <option value="doc,docx">Word</option>
+                <option value="xls,xlsx">Excel</option>
+                <option value="jpg,jpeg,png,gif">Images</option>
+              </select>
+              <i class="fas fa-file-alt absolute left-3 top-2.5 text-gray-400"></i>
+            </div>
+            <div class="relative">
+              <input id="search-input" type="text" placeholder="Rechercher un document..." class="py-2 pl-10 pr-4 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-custom-red focus:border-custom-red">
+              <i class="fas fa-search absolute left-3 top-2.5 text-gray-400"></i>
+            </div>
+            <button id="reset-filters" class="bg-gray-200 hover:bg-gray-300 text-gray-700 py-2 px-4 rounded-md transition-colors duration-200 flex items-center">
+              <i class="fas fa-redo-alt mr-2"></i> Réinitialiser
+            </button>
           </div>
         </div>
 
@@ -194,59 +875,30 @@
                 <th scope="col" class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Action</th>
               </tr>
             </thead>
-            <tbody class="bg-white divide-y divide-gray-200">
-              <tr class="hover:bg-gray-50 transition">
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <div class="flex items-center">
-                    <i class="far fa-file-pdf text-custom-red mr-3 text-lg"></i>
-                    <div>
-                      <div class="text-sm font-medium text-gray-900">Facture Mars 2025</div>
-                      <div class="text-sm text-gray-500">facture_mars.pdf • 1.3 MB</div>
-                    </div>
-                  </div>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <div class="text-sm text-gray-900">15 juin 2025</div>
-                  <div class="text-xs text-gray-500">10:32</div>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                    Traité
-                  </span>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                  <a href="#" class="text-custom-red hover:text-red-800 mr-4 inline-flex items-center">
-                    <i class="fas fa-eye mr-1"></i> Voir
-                  </a>
-                </td>
-              </tr>
-              <tr class="hover:bg-gray-50 transition">
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <div class="flex items-center">
-                    <i class="far fa-file-image text-custom-red mr-3 text-lg"></i>
-                    <div>
-                      <div class="text-sm font-medium text-gray-900">Reçu Fournitures</div>
-                      <div class="text-sm text-gray-500">recu_fournitures.jpg • 2.8 MB</div>
-                    </div>
-                  </div>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <div class="text-sm text-gray-900">18 juin 2025</div>
-                  <div class="text-xs text-gray-500">14:15</div>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
-                    En attente
-                  </span>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                  <a href="#" class="text-custom-red hover:text-red-800 mr-4 inline-flex items-center">
-                    <i class="fas fa-eye mr-1"></i> Voir
-                  </a>
+            <tbody id="documents-table-body" class="bg-white divide-y divide-gray-200">
+              <!-- Le contenu sera généré dynamiquement par JavaScript -->
+              <tr>
+                <td colspan="4" class="px-6 py-8 text-center text-gray-500">
+                  <i class="fas fa-spinner fa-spin text-gray-300 text-4xl mb-3"></i>
+                  <p>Chargement des documents...</p>
                 </td>
               </tr>
             </tbody>
           </table>
+        </div>
+        
+        <!-- Pagination -->
+        <div class="mt-6 flex justify-between items-center">
+          <div class="text-sm text-gray-500">
+            Affichage de <span id="pagination-start" class="font-medium">1</span> à <span id="pagination-end" class="font-medium">10</span> sur <span id="pagination-total" class="font-medium">0</span> documents
+          </div>
+          <div class="flex space-x-1" id="pagination-controls">
+            <button id="prev-page" class="px-3 py-1 rounded-md bg-gray-100 text-gray-700 hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed">Précédent</button>
+            <div id="page-numbers" class="flex space-x-1">
+              <!-- Les numéros de page seront générés ici -->
+            </div>
+            <button id="next-page" class="px-3 py-1 rounded-md bg-gray-100 text-gray-700 hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed">Suivant</button>
+          </div>
         </div>
       </div>
 

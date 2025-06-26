@@ -54,6 +54,7 @@
           <i class="fas fa-user-plus mr-2"></i>Créer un compte
         </h2>
     <form id="register-form">
+      <!-- Email -->
       <div class="mb-5">
         <label class="block mb-2 text-sm font-medium text-gray-700">Email</label>
         <div class="relative">
@@ -65,6 +66,62 @@
         <p id="email-format-error" class="text-red-600 text-xs mt-1 hidden">Veuillez entrer une adresse email valide</p>
       </div>
       
+      <!-- Nom -->
+      <div class="mb-5">
+        <label class="block mb-2 text-sm font-medium text-gray-700">Nom(s)</label>
+        <div class="relative">
+          <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <i class="fas fa-user text-gray-400"></i>
+          </div>
+          <input type="text" id="nom" class="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-custom-red focus:border-custom-red transition" placeholder="Dupont" required>
+        </div>
+      </div>
+      
+      <!-- Prénom -->
+      <div class="mb-5">
+        <label class="block mb-2 text-sm font-medium text-gray-700">Prénom(s)</label>
+        <div class="relative">
+          <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <i class="fas fa-user text-gray-400"></i>
+          </div>
+          <input type="text" id="prenom" class="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-custom-red focus:border-custom-red transition" placeholder="Jean Pierre" required>
+        </div>
+      </div>
+      
+      <!-- Entreprise -->
+      <div class="mb-5">
+        <label class="block mb-2 text-sm font-medium text-gray-700">Nom de l'entreprise</label>
+        <div class="relative">
+          <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <i class="fas fa-building text-gray-400"></i>
+          </div>
+          <input type="text" id="entreprise" class="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-custom-red focus:border-custom-red transition" placeholder="Entreprise SAS" required>
+        </div>
+      </div>
+      
+      <!-- Adresse -->
+      <div class="mb-5">
+        <label class="block mb-2 text-sm font-medium text-gray-700">Adresse</label>
+        <div class="relative">
+          <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <i class="fas fa-map-marker-alt text-gray-400"></i>
+          </div>
+          <input type="text" id="adresse" class="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-custom-red focus:border-custom-red transition" placeholder="123 rue des Entreprises" required>
+        </div>
+      </div>
+      
+      <!-- Numéro de téléphone -->
+      <div class="mb-5">
+        <label class="block mb-2 text-sm font-medium text-gray-700">Numéro de téléphone</label>
+        <div class="relative">
+          <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <i class="fas fa-phone text-gray-400"></i>
+          </div>
+          <input type="tel" id="numero" class="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-custom-red focus:border-custom-red transition" placeholder="06 12 34 56 78" required>
+        </div>
+      </div>
+      
+      <!-- Mot de passe -->
       <div class="mb-5">
         <label class="block mb-2 text-sm font-medium text-gray-700">Mot de passe</label>
         <div class="relative">
@@ -86,6 +143,7 @@
         </div>
       </div>
       
+      <!-- Confirmation mot de passe -->
       <div class="mb-5">
         <label class="block mb-2 text-sm font-medium text-gray-700">Confirmer le mot de passe</label>
         <div class="relative">
@@ -97,6 +155,27 @@
         <p id="password-match-error" class="text-red-600 text-xs mt-1 hidden">Les mots de passe ne correspondent pas</p>
       </div>
       
+      <!-- Cases à cocher RGPD et CGU -->
+      <div class="mb-5">
+        <div class="flex items-start mb-3">
+          <div class="flex items-center h-5">
+            <input id="rgpd" type="checkbox" class="w-4 h-4 border border-gray-300 rounded bg-gray-50 focus:ring-3 focus:ring-custom-red" required>
+          </div>
+          <label for="rgpd" class="ml-2 text-sm font-medium text-gray-700">
+            J'accepte la <a href="rgpd.html" target="_blank" class="text-custom-red hover:underline">politique de confidentialité</a> et le traitement de mes données personnelles
+          </label>
+        </div>
+        <div class="flex items-start">
+          <div class="flex items-center h-5">
+            <input id="cgu" type="checkbox" class="w-4 h-4 border border-gray-300 rounded bg-gray-50 focus:ring-3 focus:ring-custom-red" required>
+          </div>
+          <label for="cgu" class="ml-2 text-sm font-medium text-gray-700">
+            J'accepte les <a href="cgu.html" target="_blank" class="text-custom-red hover:underline">conditions générales d'utilisation</a>
+          </label>
+        </div>
+      </div>
+      
+      <!-- Rôle -->
       <div class="mb-6">
         <label class="block mb-2 text-sm font-medium text-gray-700">Rôle</label>
         <div class="relative">
@@ -126,7 +205,8 @@
     <p>© 2025 FinExpert Comptabilité. Tous droits réservés.</p>
     <div class="mt-2 flex justify-center space-x-4">
       <a href="#" class="hover:text-custom-red transition">Assistance</a>
-      <a href="#" class="hover:text-custom-red transition">Politique de confidentialité</a>
+      <a href="rgpd.html" target="_blank" class="hover:text-custom-red transition">Politique de confidentialité</a>
+      <a href="cgu.html" target="_blank" class="hover:text-custom-red transition">CGU</a>
     </div>
   </div>
 
@@ -239,6 +319,13 @@
       const password = document.getElementById('password').value;
       const confirmPassword = document.getElementById('confirm-password').value;
       const role = document.getElementById('role').value;
+      const nom = document.getElementById('nom').value;
+      const prenom = document.getElementById('prenom').value;
+      const entreprise = document.getElementById('entreprise').value;
+      const adresse = document.getElementById('adresse').value;
+      const numero = document.getElementById('numero').value;
+      const rgpd_accepted = document.getElementById('rgpd').checked;
+      const cgu_accepted = document.getElementById('cgu').checked;
 
       // Réinitialiser les messages d'erreur
       document.getElementById('message').innerHTML = '';
@@ -279,6 +366,22 @@
       document.getElementById('message').classList.remove('text-red-600', 'text-green-600');
       document.getElementById('message').classList.add('text-gray-600');
       
+      // Vérification des cases à cocher obligatoires
+      if (!rgpd_accepted || !cgu_accepted) {
+        document.getElementById('message').innerHTML = '<i class="fas fa-exclamation-circle mr-2"></i> Vous devez accepter les CGU et la politique de confidentialité pour continuer.';
+        document.getElementById('message').classList.remove('text-gray-600', 'text-green-600');
+        document.getElementById('message').classList.add('text-red-600');
+        return;
+      }
+        
+      // Vérification des champs obligatoires
+      if (role === 'client' && (!nom || !prenom || !entreprise || !adresse || !numero)) {
+        document.getElementById('message').innerHTML = '<i class="fas fa-exclamation-circle mr-2"></i> Tous les champs sont obligatoires.';
+        document.getElementById('message').classList.remove('text-gray-600', 'text-green-600');
+        document.getElementById('message').classList.add('text-red-600');
+        return;
+      }
+      
       try {
         // Définir l'URL du backend - modifiable en fonction de l'environnement
         const API_URL = 'http://localhost:3000';
@@ -308,7 +411,18 @@
             'Content-Type': 'application/json',
             'Accept': 'application/json'
           },
-          body: JSON.stringify({ email, password, role })
+          body: JSON.stringify({ 
+            email, 
+            password, 
+            role, 
+            nom, 
+            prenom, 
+            entreprise, 
+            adresse, 
+            numero, 
+            rgpd_accepted, 
+            cgu_accepted 
+          })
         });
 
         // Si la réponse est reçue, tentative de parser le JSON

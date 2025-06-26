@@ -1,0 +1,87 @@
+const multer = require('multer');
+const fs = require('fs');
+const path = require('path');
+const db = require('../models/db');
+
+// Création du dossier dynamiquement : /uploads/[nom-prenom]/[date]/
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    // Si l'utilisateur n'est pas authentifié, utiliser le dossier temp
+    if (!req.user || !req.user.id) {
+      const tempDir = path.join(__dirname, '..', 'uploads', 'temp');
+      fs.mkdirSync(tempDir, { recursive: true });
+      return cb(null, tempDir);
+    }
+    
+    // Récupérer les infos utilisateur depuis la base de données
+    db.get('SELECT nom, prenom FROM users WHERE id = ?', [req.user.id], (err, user) => {
+      if (err || !user || !user.nom || !user.prenom) {
+        console.error('Erreur lors de la récupération des infos utilisateur:', err ? err.message : 'Utilisateur introuvable');
+        const tempDir = path.join(__dirname, '..', 'uploads', 'temp');
+        fs.mkdirSync(tempDir, { recursive: true });
+        return cb(null, tempDir);
+      }
+      
+      // Formater le nom et prénom pour le dossier (sans espaces, en minuscules)
+      const nomPrenom = `${user.nom}-${user.prenom}`
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '') // Supprimer les accents
+        .replace(/[^a-z0-9-]/g, '-');
+      
+      // Créer le dossier avec classement alphabétique
+      // Format: /uploads/a/albert-dupont/
+      const premiereLettre = user.nom.charAt(0).toLowerCase();
+      
+      // Créer le dossier par date au format YYYY-MM-DD
+      const date = new Date();
+      const datePart = date.toISOString().split('T')[0]; // YYYY-MM-DD
+      
+      // Créer le chemin du dossier complet avec structure hiérarchique
+      const dir = path.join(
+        __dirname, 
+        '..', 
+        'uploads', 
+        premiereLettre, 
+        nomPrenom,
+        datePart
+      );
+      
+      // Créer le dossier s'il n'existe pas
+      fs.mkdirSync(dir, { recursive: true });
+      
+      cb(null, dir);
+    });
+  },
+  filename: function (req, file, cb) {
+    // Extraire l'extension du fichier
+    const extension = path.extname(file.originalname);
+    const basename = path.basename(file.originalname, extension);
+    
+    // Ajouter timestamp pour éviter les conflits de noms
+    const timestamp = new Date().getTime();
+    
+    cb(null, `${basename}-${timestamp}${extension}`);
+  }
+});
+
+const upload = multer({ 
+  storage,
+  fileFilter: function (req, file, cb) {
+    // Vérification des types de fichiers acceptés
+    const filetypes = /jpeg|jpg|png|gif|pdf|doc|docx|xls|xlsx|txt/;
+    const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
+    const mimetype = filetypes.test(file.mimetype);
+
+    if (mimetype && extname) {
+      return cb(null, true);
+    } else {
+      cb('Erreur: Format de fichier non autorisé! Seuls les images, PDF et documents Office sont acceptés.');
+    }
+  },
+  limits: {
+    fileSize: 10 * 1024 * 1024 // 10 MB maximum
+  }
+});
+
+module.exports = upload;

@@ -1,3 +1,4 @@
+<!-- filepath: /Users/boussy/Desktop/my_accounting-portal/client/dashboard_comptable.html -->
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -5,60 +6,22 @@
   <title>Tableau de bord Comptable | FinExpert Comptabilité</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" integrity="sha512-9usAa10IRO0HhonpyAIVpjrylPvoDwiPUiKdWk5t3PyolY1cOd4DSE0Ga+ri4AuTroPR5aQvXU9xC6qOPnzFeg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
   <style>
-    .bg-custom-red {
-      background-color: #9a1f40;
-    }
-    .text-custom-red {
-      color: #9a1f40;
-    }
-    .border-custom-red {
-      border-color: #9a1f40;
-    }
-    .hover-custom-red:hover {
-      background-color: #7a1930;
-    }
-    .gradient-header {
-      background: linear-gradient(to right, #9a1f40, #c13c54);
-    }
-    .gradient-bg {
-      background: linear-gradient(135deg, #f5f7fa 0%, #eef2f7 100%);
-    }
-    .shadow-custom {
-      box-shadow: 0 10px 25px -5px rgba(154, 31, 64, 0.1), 0 8px 10px -6px rgba(154, 31, 64, 0.05);
-    }
-    .focus-custom:focus {
-      border-color: #9a1f40;
-      box-shadow: 0 0 0 3px rgba(154, 31, 64, 0.2);
-    }
-    .card-hover:hover {
-      transform: translateY(-5px);
-      transition: transform 0.3s ease;
-    }
+    .bg-custom-red { background-color: #9a1f40; }
+    .text-custom-red { color: #9a1f40; }
+    .border-custom-red { border-color: #9a1f40; }
+    .hover-custom-red:hover { background-color: #7a1930; }
+    .gradient-header { background: linear-gradient(to right, #9a1f40, #c13c54); }
+    .gradient-bg { background: linear-gradient(135deg, #f5f7fa 0%, #eef2f7 100%); }
   </style>
 </head>
 <body class="gradient-bg min-h-screen pb-12">
-  <script>
-    // Vérification de sécurité - Uniquement pour les professionnels
-    (function() {
-      const userRole = localStorage.getItem('userRole');
-      const authToken = localStorage.getItem('authToken');
-      
-      // Si pas de token ou pas de rôle, rediriger vers la page de connexion
-      if (!authToken || !userRole) {
-        window.location.href = 'login.html';
-        return;
-      }
-      
-      // Si le rôle n'est pas 'professionnel', accès refusé
-      if (userRole !== 'professionnel') {
-        alert('Accès non autorisé. Ce tableau de bord est réservé aux professionnels.');
-        window.location.href = 'login.html';
-        return;
-      }
-    })();
-  </script>
+  <!-- Chargement des scripts JavaScript -->
+  <script src="js/document-preview.js"></script>
+  <script src="js/document-filters.js"></script>
+  <script src="js/date-updater.js"></script>
+  <script src="js/components/dashboard-comptable.js"></script>
   
   <div class="gradient-header text-white p-4 shadow-md">
     <div class="max-w-6xl mx-auto flex justify-between items-center">
@@ -67,276 +30,187 @@
         <h1 class="text-xl font-bold">FinExpert Comptabilité</h1>
       </div>
       <div class="flex items-center space-x-4">
-        <a href="#" class="hover:text-gray-200 transition flex items-center">
-          <div class="w-8 h-8 rounded-full bg-white bg-opacity-20 flex items-center justify-center mr-1">
-            <i class="far fa-bell text-lg"></i>
-          </div>
-          <span class="relative">
-            <span class="absolute top-0 right-0 -mt-1 -mr-1 flex items-center justify-center w-4 h-4 rounded-full bg-red-500 text-xs font-bold">3</span>
-          </span>
-        </a>
-        <a href="#" class="hover:text-gray-200 transition flex items-center">
-          <div class="w-8 h-8 rounded-full bg-white bg-opacity-20 flex items-center justify-center mr-1">
-            <i class="far fa-user-circle text-lg"></i>
-          </div>
-          <span>Mon compte</span>
-        </a>
-        <a href="login.html" class="hover:text-gray-200 transition flex items-center">
-          <i class="fas fa-sign-out-alt mr-1"></i>
-          <span>Déconnexion</span>
-        </a>
+        <a href="mon_compte.html" class="hover:text-gray-200 transition">Mon compte</a>
+        <a href="login.html" class="hover:text-gray-200 transition">Déconnexion</a>
       </div>
     </div>
   </div>
 
   <div class="max-w-6xl mx-auto mt-8 px-4">
-    <div class="bg-white rounded-lg shadow-custom overflow-hidden">
-      <div class="border-b border-gray-200 p-8">
+    <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+      <div class="border-b border-gray-200 p-6">
         <div class="flex items-center justify-between">
           <div>
-            <h2 class="text-3xl font-semibold text-custom-red">Tableau de bord – Comptable</h2>
-            <p class="text-gray-600 mt-2">Consultez et gérez les documents envoyés par vos clients</p>
-          </div>
-          <div class="hidden md:block">
-            <div class="text-right">
-              <p class="text-sm text-gray-500">Date du jour</p>
-              <p class="text-xl font-medium">24 juin 2025</p>
-            </div>
+            <h2 class="text-2xl font-semibold text-custom-red">Tableau de bord – Comptable</h2>
+            <p class="text-gray-600 mt-1">Consultez et gérez les documents de vos clients</p>
+          </div>            
+          <div class="text-right">
+            <p class="text-sm text-gray-500">Date du jour</p>
+            <p id="current-date" class="text-xl font-medium">26 juin 2025</p>
           </div>
         </div>
       </div>
 
+      <!-- Notification -->
+      <div id="notification" class="mx-6 mt-4 p-3 rounded-lg text-sm font-medium hidden">
+        Statut mis à jour avec succès
+      </div>
+      
       <!-- Statistiques -->
-      <div class="grid md:grid-cols-4 gap-6 p-8 border-b border-gray-200">
-        <div class="bg-white p-6 rounded-lg shadow-custom border border-gray-100 hover:shadow-lg transition-all card-hover">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-6 p-6 border-b border-gray-200">
+        <div class="bg-white p-4 rounded-lg shadow border border-gray-100">
           <div class="flex items-center">
-            <div class="rounded-full bg-red-50 p-4">
-              <i class="fas fa-users text-2xl text-custom-red"></i>
+            <div class="rounded-full bg-red-50 p-3">
+              <i class="fas fa-users text-xl text-custom-red"></i>
             </div>
-            <div class="ml-5">
-              <p class="text-sm font-medium text-gray-500 uppercase tracking-wide">Clients actifs</p>
+            <div class="ml-4">
+              <p class="text-sm font-medium text-gray-500">Clients actifs</p>
+              <p id="clients-count" class="text-2xl font-bold">0</p>
+            </div>
+          </div>
+        </div>
+        
+        <div class="bg-white p-4 rounded-lg shadow border border-gray-100">
+          <div class="flex items-center">
+            <div class="rounded-full bg-red-50 p-3">
+              <i class="fas fa-file-alt text-xl text-custom-red"></i>
+            </div>
+            <div class="ml-4">
+              <p class="text-sm font-medium text-gray-500">À traiter</p>
               <div class="flex items-end">
-                <p class="text-2xl font-bold">24</p>
+                <p id="pending-count" class="text-2xl font-bold">0</p>
+                <div class="ml-3 text-sm">
+                  (<span id="urgent-count" class="text-red-500 font-medium">0</span> urgent)
+                </div>
               </div>
             </div>
           </div>
         </div>
-        <div class="bg-white p-6 rounded-lg shadow-custom border border-gray-100 hover:shadow-lg transition-all card-hover">
+        
+        <div class="bg-white p-4 rounded-lg shadow border border-gray-100">
           <div class="flex items-center">
-            <div class="rounded-full bg-red-50 p-4">
-              <i class="fas fa-file-alt text-2xl text-custom-red"></i>
+            <div class="rounded-full bg-red-50 p-3">
+              <i class="fas fa-check-circle text-xl text-custom-red"></i>
             </div>
-            <div class="ml-5">
-              <p class="text-sm font-medium text-gray-500 uppercase tracking-wide">À traiter</p>
-              <div class="flex items-end">
-                <p class="text-2xl font-bold">8</p>
-                <p class="text-amber-600 text-sm ml-2 font-medium">3 urgents</p>
-              </div>
+            <div class="ml-4">
+              <p class="text-sm font-medium text-gray-500">Traités</p>
+              <p id="processed-count" class="text-2xl font-bold">0</p>
             </div>
           </div>
         </div>
-        <div class="bg-white p-6 rounded-lg shadow-custom border border-gray-100 hover:shadow-lg transition-all card-hover">
+        
+        <div class="bg-white p-4 rounded-lg shadow border border-gray-100">
           <div class="flex items-center">
-            <div class="rounded-full bg-red-50 p-4">
-              <i class="fas fa-check-circle text-2xl text-custom-red"></i>
+            <div class="rounded-full bg-red-50 p-3">
+              <i class="fas fa-chart-line text-xl text-custom-red"></i>
             </div>
-            <div class="ml-5">
-              <p class="text-sm font-medium text-gray-500 uppercase tracking-wide">Traités</p>
-              <div class="flex items-end">
-                <p class="text-2xl font-bold">42</p>
-                <p class="text-green-600 text-sm ml-2 font-medium">cette semaine</p>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="bg-white p-6 rounded-lg shadow-custom border border-gray-100 hover:shadow-lg transition-all card-hover">
-          <div class="flex items-center">
-            <div class="rounded-full bg-red-50 p-4">
-              <i class="fas fa-calendar-alt text-2xl text-custom-red"></i>
-            </div>
-            <div class="ml-5">
-              <p class="text-sm font-medium text-gray-500 uppercase tracking-wide">Échéances</p>
-              <div class="flex items-end">
-                <p class="text-2xl font-bold">5</p>
-                <p class="text-red-600 text-sm ml-2 font-medium">Cette semaine</p>
-              </div>
+            <div class="ml-4">
+              <p class="text-sm font-medium text-gray-500">Taux de traitement</p>
+              <p id="processing-rate" class="text-2xl font-bold">0%</p>
             </div>
           </div>
         </div>
       </div>
 
-      <div class="p-8">
-        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
-          <h3 class="text-xl font-semibold text-gray-800 flex items-center mb-3 md:mb-0">
-            <i class="fas fa-file-import mr-2 text-custom-red"></i>
-            Documents récents
-          </h3>
-          <div class="flex flex-col md:flex-row space-y-2 md:space-y-0 md:space-x-4">
-            <div class="relative">
-              <select class="pl-10 pr-4 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-custom-red focus:border-custom-red appearance-none">
-                <option>Tous les statuts</option>
-                <option>À traiter</option>
-                <option>En attente</option>
-                <option>Traité</option>
-                <option>Urgent</option>
-              </select>
-              <i class="fas fa-filter absolute left-3 top-2.5 text-gray-400"></i>
+      <div class="p-6">
+        <!-- Filtres -->
+        <div class="bg-gray-50 rounded-lg p-4 mb-6">
+          <div class="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-gray-200 pb-4 mb-4">
+            <h3 class="text-lg font-semibold text-gray-800 mb-3 md:mb-0">Documents</h3>
+            <div class="flex items-center space-x-2">
+              <input id="search-input" type="text" placeholder="Rechercher..." class="px-4 py-2 border border-gray-300 rounded-md text-sm">
+              <button id="reset-filters" class="bg-gray-200 text-gray-700 px-3 py-2 rounded-md text-sm">Réinitialiser</button>
             </div>
-            <div class="relative">
-              <input type="text" placeholder="Rechercher un client..." class="py-2 pl-10 pr-4 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-custom-red focus:border-custom-red w-full md:w-64">
-              <i class="fas fa-search absolute left-3 top-2.5 text-gray-400"></i>
+          </div>
+          
+          <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div>
+              <label for="status-filter" class="block text-sm font-medium text-gray-700 mb-1">Statut</label>
+              <select id="status-filter" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm">
+                <option value="">Tous les statuts</option>
+                <option value="pending">En attente</option>
+                <option value="processing">En traitement</option>
+                <option value="validated">Traité</option>
+                <option value="urgent">Urgent</option>
+              </select>
+            </div>
+            
+            <div>
+              <label for="client-filter" class="block text-sm font-medium text-gray-700 mb-1">Client</label>
+              <select id="client-filter" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm">
+                <option value="">Tous les clients</option>
+              </select>
+            </div>
+            
+            <div>
+              <label for="doctype-filter" class="block text-sm font-medium text-gray-700 mb-1">Type de document</label>
+              <select id="doctype-filter" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm">
+                <option value="">Tous les types</option>
+                <option value="pdf">PDF</option>
+                <option value="doc,docx">Word</option>
+                <option value="xls,xlsx">Excel</option>
+                <option value="jpg,jpeg,png,gif">Images</option>
+              </select>
+            </div>
+            
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Période</label>
+              <div class="flex items-center">
+                <input id="date-from" type="date" class="w-full px-3 py-2 border border-gray-300 rounded-l-md text-sm">
+                <span class="px-2 bg-gray-100 border-t border-b border-gray-300">à</span>
+                <input id="date-to" type="date" class="w-full px-3 py-2 border border-gray-300 rounded-r-md text-sm">
+              </div>
             </div>
           </div>
         </div>
 
-        <div class="overflow-x-auto bg-white rounded-lg shadow-sm">
+        <!-- Tableau des documents -->
+        <div class="overflow-x-auto bg-white rounded-lg shadow">
           <table class="min-w-full divide-y divide-gray-200">
-            <thead class="bg-gray-50">
+            <thead class="bg-custom-red text-white">
               <tr>
-                <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Client</th>
-                <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Document</th>
-                <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Statut</th>
-                <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Action</th>
+                <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Client</th>
+                <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Document</th>
+                <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Date</th>
+                <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Statut</th>
+                <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Actions</th>
               </tr>
             </thead>
-            <tbody class="bg-white divide-y divide-gray-200">
-              <tr class="hover:bg-gray-50 transition">
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <div class="flex items-center">
-                    <div class="flex-shrink-0 h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center">
-                      <span class="font-medium text-gray-700">JD</span>
-                    </div>
-                    <div class="ml-4">
-                      <div class="text-sm font-medium text-gray-900">Jean Dupont</div>
-                      <div class="text-xs text-gray-500">jean.dupont@example.com</div>
-                    </div>
-                  </div>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <div class="flex items-center">
-                    <i class="far fa-file-pdf text-custom-red mr-2"></i>
-                    <div class="text-sm text-gray-900">facture_mars.pdf</div>
-                  </div>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <div class="text-sm text-gray-900">15 juin 2025</div>
-                  <div class="text-xs text-gray-500">10:32</div>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                    Traité
-                  </span>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                  <a href="#" class="text-custom-red hover:text-red-800 mr-3 inline-flex items-center">
-                    <i class="fas fa-eye mr-1"></i> Voir
-                  </a>
-                  <a href="#" class="text-custom-red hover:text-red-800 inline-flex items-center">
-                    <i class="fas fa-download mr-1"></i> Télécharger
-                  </a>
-                </td>
-              </tr>
-              <tr class="hover:bg-gray-50 transition">
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <div class="flex items-center">
-                    <div class="flex-shrink-0 h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center">
-                      <span class="font-medium text-gray-700">MM</span>
-                    </div>
-                    <div class="ml-4">
-                      <div class="text-sm font-medium text-gray-900">Marie Martin</div>
-                      <div class="text-xs text-gray-500">marie.martin@example.com</div>
-                    </div>
-                  </div>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <div class="flex items-center">
-                    <i class="far fa-file-pdf text-custom-red mr-2"></i>
-                    <div class="text-sm text-gray-900">declaration2024.pdf</div>
-                  </div>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <div class="text-sm text-gray-900">20 juin 2025</div>
-                  <div class="text-xs text-gray-500">14:45</div>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
-                    En attente
-                  </span>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                  <a href="#" class="text-custom-red hover:text-red-800 mr-3 inline-flex items-center">
-                    <i class="fas fa-eye mr-1"></i> Voir
-                  </a>
-                  <a href="#" class="text-custom-red hover:text-red-800 inline-flex items-center">
-                    <i class="fas fa-download mr-1"></i> Télécharger
-                  </a>
-                </td>
-              </tr>
-              <tr class="hover:bg-gray-50 transition">
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <div class="flex items-center">
-                    <div class="flex-shrink-0 h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center">
-                      <span class="font-medium text-gray-700">PR</span>
-                    </div>
-                    <div class="ml-4">
-                      <div class="text-sm font-medium text-gray-900">Paul Richard</div>
-                      <div class="text-xs text-gray-500">paul.richard@example.com</div>
-                    </div>
-                  </div>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <div class="flex items-center">
-                    <i class="far fa-file-pdf text-custom-red mr-2"></i>
-                    <div class="text-sm text-gray-900">bilan_trimestriel.pdf</div>
-                  </div>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <div class="text-sm text-gray-900">22 juin 2025</div>
-                  <div class="text-xs text-gray-500">09:15</div>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
-                    Urgent
-                  </span>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                  <a href="#" class="text-custom-red hover:text-red-800 mr-3 inline-flex items-center">
-                    <i class="fas fa-eye mr-1"></i> Voir
-                  </a>
-                  <a href="#" class="text-custom-red hover:text-red-800 inline-flex items-center">
-                    <i class="fas fa-download mr-1"></i> Télécharger
-                  </a>
+            <tbody id="documents-table-body" class="bg-white divide-y divide-gray-200">
+              <tr>
+                <td colspan="5" class="px-6 py-4 text-center text-gray-500">
+                  <i class="fas fa-spinner fa-spin text-custom-red text-2xl mb-2"></i>
+                  <p>Chargement des documents...</p>
                 </td>
               </tr>
             </tbody>
           </table>
         </div>
         
-        <div class="mt-6 flex justify-between items-center">
+        <!-- Actions -->
+        <div class="mt-4 flex justify-between items-center">
           <div class="text-sm text-gray-500">
-            Affichage de <span class="font-medium">1</span> à <span class="font-medium">3</span> sur <span class="font-medium">24</span> documents
+            <span id="pagination-info">Chargement des données...</span>
           </div>
-          <div class="flex space-x-1">
-            <a href="#" class="px-3 py-1 rounded-md bg-gray-100 text-gray-700 hover:bg-gray-200">Précédent</a>
-            <a href="#" class="px-3 py-1 rounded-md bg-custom-red text-white">1</a>
-            <a href="#" class="px-3 py-1 rounded-md bg-gray-100 text-gray-700 hover:bg-gray-200">2</a>
-            <a href="#" class="px-3 py-1 rounded-md bg-gray-100 text-gray-700 hover:bg-gray-200">3</a>
-            <a href="#" class="px-3 py-1 rounded-md bg-gray-100 text-gray-700 hover:bg-gray-200">Suivant</a>
+          <div class="flex space-x-2">
+            <button id="export-csv" class="bg-gray-200 text-gray-700 px-4 py-2 rounded-md text-sm">
+              <i class="fas fa-file-export mr-1"></i> Exporter CSV
+            </button>
+            <button id="print-docs" class="bg-gray-200 text-gray-700 px-4 py-2 rounded-md text-sm">
+              <i class="fas fa-print mr-1"></i> Imprimer
+            </button>
           </div>
         </div>
       </div>
 
       <!-- Footer -->
-      <div class="bg-gray-50 p-8 border-t border-gray-200">
-        <div class="flex flex-col md:flex-row justify-between items-center text-sm text-gray-600">
-          <div class="mb-4 md:mb-0">
-            <p>© 2025 FinExpert Comptabilité. Tous droits réservés.</p>
-          </div>
-          <div class="flex flex-wrap justify-center space-x-4">
-            <a href="#" class="hover:text-custom-red transition mb-2 md:mb-0"><i class="fas fa-headset mr-1"></i> Assistance</a>
-            <a href="#" class="hover:text-custom-red transition mb-2 md:mb-0"><i class="fas fa-shield-alt mr-1"></i> Politique de confidentialité</a>
-            <a href="#" class="hover:text-custom-red transition mb-2 md:mb-0"><i class="fas fa-gavel mr-1"></i> Mentions légales</a>
+      <div class="bg-gray-50 p-6 border-t border-gray-200">
+        <div class="text-center text-sm text-gray-600">
+          <p>© 2025 FinExpert Comptabilité. Tous droits réservés.</p>
+          <div class="mt-2">
+            <a href="rgpd.html" class="text-custom-red hover:underline">Politique de confidentialité</a>
+            <span class="mx-2">|</span>
+            <a href="cgu.html" class="text-custom-red hover:underline">Mentions légales</a>
           </div>
         </div>
       </div>

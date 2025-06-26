@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Mon Compte | FinExpert Comptabilité</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <style>
+    .bg-custom-red {
+      background-color: #9a1f40;
+    }
+    .text-custom-red {
+      color: #9a1f40;
+    }
+    .border-custom-red {
+      border-color: #9a1f40;
+    }
+    .hover-custom-red:hover {
+      background-color: #7a1930;
+    }
+    .gradient-header {
+      background: linear-gradient(to right, #9a1f40, #c13c54);
+    }
+    .gradient-bg {
+      background: linear-gradient(135deg, #f5f7fa 0%, #eef2f7 100%);
+    }
+    .shadow-custom {
+      box-shadow: 0 10px 25px -5px rgba(154, 31, 64, 0.1), 0 8px 10px -6px rgba(154, 31, 64, 0.05);
+    }
+    .focus-custom:focus {
+      border-color: #9a1f40;
+      box-shadow: 0 0 0 3px rgba(154, 31, 64, 0.2);
+    }
+    .card-hover:hover {
+      transform: translateY(-5px);
+      transition: transform 0.3s ease;
+    }
+  </style>
+</head>
+<body class="gradient-bg min-h-screen pb-12">
+  <script>
+    // Vérification de sécurité - Seuls les utilisateurs connectés peuvent accéder
+    (function() {
+      const userRole = localStorage.getItem('userRole');
+      const authToken = localStorage.getItem('authToken');
+      
+      // Si pas de token ou pas de rôle, rediriger vers la page de connexion
+      if (!authToken || !userRole) {
+        window.location.href = 'login.html';
+        return;
+      }
+    })();
+
+    // Fonction pour récupérer les informations du profil utilisateur
+    async function fetchUserProfile() {
+      try {
+        const authToken = localStorage.getItem('authToken');
+        const response = await fetch('http://localhost:3000/api/auth/profile', {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${authToken}`,
+            'Content-Type': 'application/json'
+          }
+        });
+
+        if (!response.ok) {
+          throw new Error('Échec de la récupération des données du profil');
+        }
+
+        const profileData = await response.json();
+        displayUserProfile(profileData);
+      } catch (error) {
+        console.error('Erreur lors de la récupération du profil:', error);
+        document.getElementById('error-message').textContent = 'Impossible de charger les données du profil. Veuillez réessayer plus tard.';
+        document.getElementById('error-message').classList.remove('hidden');
+      }
+    }
+
+    // Fonction pour afficher les informations du profil
+    function displayUserProfile(profileData) {
+      // Remplir les informations générales
+      document.getElementById('user-name').textContent = `${profileData.prenom} ${profileData.nom}`;
+      document.getElementById('user-role').textContent = profileData.role === 'client' ? 'Client' : 'Professionnel';
+      document.getElementById('user-email').textContent = profileData.email;
+      document.getElementById('user-phone').textContent = profileData.numero || 'Non spécifié';
+      
+      // Remplir les informations complémentaires
+      document.getElementById('info-nom').value = profileData.nom || '';
+      document.getElementById('info-prenom').value = profileData.prenom || '';
+      document.getElementById('info-email').value = profileData.email || '';
+      document.getElementById('info-telephone').value = profileData.numero || '';
+      document.getElementById('info-entreprise').value = profileData.entreprise || '';
+      document.getElementById('info-adresse').value = profileData.adresse || '';
+
+      // Afficher ou masquer la section entreprise selon le rôle
+      if (profileData.role === 'professionnel') {
+        document.getElementById('section-entreprise').classList.add('hidden');
+      }
+
+      // Mettre à jour l'image de profil si disponible
+      if (profileData.photo) {
+        document.getElementById('profile-image').src = profileData.photo;
+      }
+
+      // Afficher la date d'inscription
+      const dateInscription = profileData.dateInscription 
+        ? new Date(profileData.dateInscription).toLocaleDateString('fr-FR', {
+            day: 'numeric',
+            month: 'long',
+            year: 'numeric'
+          })
+        : 'Non disponible';
+      document.getElementById('date-inscription').textContent = dateInscription;
+    }
+
+    // Fonction pour mettre à jour le profil utilisateur
+    async function updateProfile(event) {
+      event.preventDefault();
+      
+      const updateBtn = document.getElementById('update-btn');
+      const statusMessage = document.getElementById('status-message');
+      
+      // Changer le bouton en mode chargement
+      updateBtn.disabled = true;
+      updateBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Mise à jour...';
+      
+      // Récupérer les données du formulaire
+      const profileData = {
+        nom: document.getElementById('info-nom').value,
+        prenom: document.getElementById('info-prenom').value,
+        email: document.getElementById('info-email').value,
+        numero: document.getElementById('info-telephone').value,
+        entreprise: document.getElementById('info-entreprise').value,
+        adresse: document.getElementById('info-adresse').value
+      };
+      
+      try {
+        const authToken = localStorage.getItem('authToken');
+        const response = await fetch('http://localhost:3000/api/auth/update-profile', {
+          method: 'PUT',
+          headers: {
+            'Authorization': `Bearer ${authToken}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(profileData)
+        });
+        
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.message || 'Erreur lors de la mise à jour du profil');
+        }
+        
+        // Afficher le message de succès
+        statusMessage.textContent = 'Profil mis à jour avec succès';
+        statusMessage.classList.remove('text-red-600', 'hidden');
+        statusMessage.classList.add('text-green-600');
+        
+        // Actualiser les informations affichées
+        document.getElementById('user-name').textContent = `${profileData.prenom} ${profileData.nom}`;
+        document.getElementById('user-email').textContent = profileData.email;
+        document.getElementById('user-phone').textContent = profileData.numero || 'Non spécifié';
+        
+        // Faire disparaître le message après 3 secondes
+        setTimeout(() => {
+          statusMessage.classList.add('hidden');
+        }, 3000);
+      } catch (error) {
+        console.error('Erreur lors de la mise à jour du profil:', error);
+        
+        // Afficher le message d'erreur
+        statusMessage.textContent = error.message || 'Erreur lors de la mise à jour du profil';
+        statusMessage.classList.remove('text-green-600', 'hidden');
+        statusMessage.classList.add('text-red-600');
+      } finally {
+        // Rétablir le bouton
+        updateBtn.disabled = false;
+        updateBtn.innerHTML = '<i class="fas fa-save mr-2"></i> Mettre à jour';
+      }
+    }
+
+    // Charger les informations du profil au chargement de la page
+    document.addEventListener('DOMContentLoaded', fetchUserProfile);
+  </script>
+  
+  <div class="gradient-header text-white p-4 shadow-md">
+    <div class="max-w-6xl mx-auto flex justify-between items-center">
+      <div class="flex items-center">
+        <i class="fas fa-chart-line text-2xl mr-3"></i>
+        <h1 class="text-xl font-bold">FinExpert Comptabilité</h1>
+        <span class="ml-4 text-sm opacity-75" id="current-date">26 juin 2025</span>
+      </div>
+      <div class="flex items-center space-x-4">
+        <a href="#" class="hover:text-gray-200 transition flex items-center">
+          <div class="w-8 h-8 rounded-full bg-white bg-opacity-20 flex items-center justify-center mr-1">
+            <i class="far fa-bell text-lg"></i>
+          </div>
+        </a>
+        <a href="mon_compte.html" class="hover:text-gray-200 transition flex items-center">
+          <div class="w-8 h-8 rounded-full bg-white bg-opacity-20 flex items-center justify-center mr-1">
+            <i class="far fa-user-circle text-lg"></i>
+          </div>
+          <span>Mon compte</span>
+        </a>
+        <a href="login.html" class="hover:text-gray-200 transition flex items-center">
+          <i class="fas fa-sign-out-alt mr-1"></i>
+          <span>Déconnexion</span>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <div class="max-w-6xl mx-auto mt-8 px-4">
+    <div class="bg-white rounded-lg shadow-custom overflow-hidden">
+      <!-- En-tête de la page -->
+      <div class="border-b border-gray-200 p-8">
+        <div class="flex items-center justify-between">
+          <div>
+            <div class="flex items-center">
+              <a href="#" onclick="goBack()" class="mr-3 text-gray-500 hover:text-custom-red transition-colors">
+                <i class="fas fa-arrow-left"></i>
+              </a>
+              <h2 class="text-3xl font-semibold text-custom-red">Mon compte</h2>
+            </div>
+            <p class="text-gray-600 mt-2">Gérez vos informations personnelles</p>
+          </div>            <div class="hidden md:block">
+            <div class="text-right">
+              <p class="text-sm text-gray-500">Date du jour</p>
+              <p id="current-date" class="text-xl font-medium">26 juin 2025</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Contenu principal -->
+      <div class="p-8">
+        <div id="error-message" class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-6 hidden" role="alert">
+          <p>Erreur lors du chargement des informations.</p>
+        </div>
+
+        <div class="grid md:grid-cols-3 gap-8">
+          <!-- Colonne 1: Profil -->
+          <div class="md:col-span-1">
+            <div class="bg-white p-6 rounded-lg shadow-custom border border-gray-100">
+              <div class="flex flex-col items-center text-center mb-6">
+                <div class="w-32 h-32 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden mb-4">
+                  <img id="profile-image" src="https://via.placeholder.com/128x128" alt="Photo de profil" class="w-full h-full object-cover">
+                </div>
+                <h3 id="user-name" class="text-xl font-semibold"></h3>
+                <span id="user-role" class="inline-block bg-custom-red bg-opacity-10 text-custom-red px-3 py-1 rounded-full text-sm font-medium mt-2"></span>
+              </div>
+              
+              <div class="border-t border-gray-100 pt-4">
+                <div class="flex items-center mb-3">
+                  <div class="w-10 h-10 rounded-full bg-red-50 flex items-center justify-center mr-3">
+                    <i class="far fa-envelope text-custom-red"></i>
+                  </div>
+                  <div>
+                    <p class="text-xs text-gray-500 uppercase">Email</p>
+                    <p id="user-email" class="text-gray-800"></p>
+                  </div>
+                </div>
+                
+                <div class="flex items-center mb-3">
+                  <div class="w-10 h-10 rounded-full bg-red-50 flex items-center justify-center mr-3">
+                    <i class="fas fa-phone text-custom-red"></i>
+                  </div>
+                  <div>
+                    <p class="text-xs text-gray-500 uppercase">Téléphone</p>
+                    <p id="user-phone" class="text-gray-800"></p>
+                  </div>
+                </div>
+                
+                <div class="flex items-center">
+                  <div class="w-10 h-10 rounded-full bg-red-50 flex items-center justify-center mr-3">
+                    <i class="fas fa-calendar-alt text-custom-red"></i>
+                  </div>
+                  <div>
+                    <p class="text-xs text-gray-500 uppercase">Date d'inscription</p>
+                    <p id="date-inscription" class="text-gray-800"></p>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="mt-6 text-center">
+                <button onclick="changePassword()" class="text-custom-red hover:text-red-800 text-sm font-medium flex items-center justify-center mx-auto">
+                  <i class="fas fa-key mr-2"></i>Changer mon mot de passe
+                </button>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Colonne 2: Informations -->
+          <div class="md:col-span-2">
+            <div class="bg-white p-6 rounded-lg shadow-custom border border-gray-100">
+              <h3 class="text-xl font-semibold text-gray-800 mb-6 flex items-center">
+                <i class="fas fa-user-edit mr-2 text-custom-red"></i>
+                Modifier mes informations
+              </h3>
+              
+              <form id="profile-form" onsubmit="updateProfile(event)">
+                <div class="grid md:grid-cols-2 gap-6 mb-6">
+                  <!-- Nom -->
+                  <div>
+                    <label for="info-nom" class="block text-sm font-medium text-gray-700 mb-1">Nom</label>
+                    <input type="text" id="info-nom" name="nom" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-custom-red focus:border-custom-red transition">
+                  </div>
+                  
+                  <!-- Prénom -->
+                  <div>
+                    <label for="info-prenom" class="block text-sm font-medium text-gray-700 mb-1">Prénom</label>
+                    <input type="text" id="info-prenom" name="prenom" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-custom-red focus:border-custom-red transition">
+                  </div>
+                  
+                  <!-- Email -->
+                  <div>
+                    <label for="info-email" class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                    <input type="email" id="info-email" name="email" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-custom-red focus:border-custom-red transition">
+                  </div>
+                  
+                  <!-- Téléphone -->
+                  <div>
+                    <label for="info-telephone" class="block text-sm font-medium text-gray-700 mb-1">Téléphone</label>
+                    <input type="tel" id="info-telephone" name="telephone" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-custom-red focus:border-custom-red transition">
+                  </div>
+                  
+                  <!-- Entreprise - visible uniquement pour les clients -->
+                  <div id="section-entreprise">
+                    <label for="info-entreprise" class="block text-sm font-medium text-gray-700 mb-1">Entreprise</label>
+                    <input type="text" id="info-entreprise" name="entreprise" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-custom-red focus:border-custom-red transition">
+                  </div>
+                  
+                  <!-- Adresse -->
+                  <div class="md:col-span-2">
+                    <label for="info-adresse" class="block text-sm font-medium text-gray-700 mb-1">Adresse</label>
+                    <textarea id="info-adresse" name="adresse" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-custom-red focus:border-custom-red transition"></textarea>
+                  </div>
+                </div>
+                
+                <div class="flex justify-between items-center">
+                  <p id="status-message" class="text-green-600 hidden">Vos informations ont été mises à jour avec succès.</p>
+                  <button id="update-btn" type="submit" class="bg-custom-red hover:bg-red-700 text-white py-2 px-6 rounded-md transition-colors duration-200 flex items-center justify-center shadow-sm">
+                    <i class="fas fa-save mr-2"></i> Mettre à jour
+                  </button>
+                </div>
+              </form>
+            </div>
+
+            <div class="bg-white p-6 rounded-lg shadow-custom border border-gray-100 mt-6">
+              <h3 class="text-xl font-semibold text-gray-800 mb-6 flex items-center">
+                <i class="fas fa-shield-alt mr-2 text-custom-red"></i>
+                Sécurité du compte
+              </h3>
+
+              <div class="mb-6">
+                <p class="text-gray-600 mb-4">
+                  Pour protéger votre compte, nous vous recommandons :
+                </p>
+                <ul class="list-disc pl-5 text-gray-600 space-y-2">
+                  <li>De changer régulièrement votre mot de passe</li>
+                  <li>De ne jamais partager vos informations de connexion</li>
+                  <li>De vous déconnecter après chaque utilisation sur un appareil partagé</li>
+                </ul>
+              </div>
+
+              <div class="flex items-center bg-blue-50 p-4 rounded-lg">
+                <div class="text-blue-700 mr-4">
+                  <i class="fas fa-info-circle text-3xl"></i>
+                </div>
+                <div>
+                  <p class="text-blue-700 font-medium">Vérification en deux étapes</p>
+                  <p class="text-sm text-blue-600">
+                    Pour une sécurité renforcée, activez la vérification en deux étapes.
+                    <a href="#" class="underline hover:text-blue-800">En savoir plus</a>
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="bg-gray-50 p-8 border-t border-gray-200">
+        <div class="flex flex-col md:flex-row justify-between items-center text-sm text-gray-600">
+          <div class="mb-4 md:mb-0">
+            <p>© 2025 FinExpert Comptabilité. Tous droits réservés.</p>
+          </div>
+          <div class="flex flex-wrap justify-center space-x-4">
+            <a href="#" class="hover:text-custom-red transition mb-2 md:mb-0"><i class="fas fa-headset mr-1"></i> Assistance</a>
+            <a href="#" class="hover:text-custom-red transition mb-2 md:mb-0"><i class="fas fa-shield-alt mr-1"></i> Politique de confidentialité</a>
+            <a href="#" class="hover:text-custom-red transition mb-2 md:mb-0"><i class="fas fa-gavel mr-1"></i> Mentions légales</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Fonction pour revenir à la page précédente
+    function goBack() {
+      const userRole = localStorage.getItem('userRole');
+      if (userRole === 'client') {
+        window.location.href = 'dashboard_client.html';
+      } else if (userRole === 'professionnel') {
+        window.location.href = 'dashboard_comptable.html';
+      } else {
+        window.location.href = 'login.html';
+      }
+    }
+
+    // Fonction pour changer le mot de passe
+    function changePassword() {
+      // Rediriger vers une page de changement de mot de passe
+      // Cette fonction serait à implémenter plus tard
+      alert('Cette fonctionnalité sera disponible prochainement.');
+    }
+  </script>
+  <script src="js/date-updater.js"></script>
+</body>
+</html>

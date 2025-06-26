@@ -1,7 +1,7 @@
 #!/bin/bash
 # Script d'administration pour FinExpert Comptabilité
 
-RESET_DB_SCRIPT="server/reset_db.sh"
+RESET_DB_SCRIPT="server/archive/utils/reset_db.sh"
 
 # Fonction pour afficher le menu
 show_menu() {

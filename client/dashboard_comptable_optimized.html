@@ -1,0 +1,354 @@
+<!-- filepath: /Users/boussy/Desktop/my_accounting-portal/client/dashboard_comptable.html -->
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Tableau de bord Comptable | FinExpert Comptabilité</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" integrity="sha512-9usAa10IRO0HhonpyAIVpjrylPvoDwiPUiKdWk5t3PyolY1cOd4DSE0Ga+ri4AuTroPR5aQvXU9xC6qOPnzFeg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <style>
+    .bg-custom-red { background-color: #9a1f40; }
+    .text-custom-red { color: #9a1f40; }
+    .border-custom-red { border-color: #9a1f40; }
+    .hover-custom-red:hover { background-color: #7a1930; }
+    .gradient-header { background: linear-gradient(to right, #9a1f40, #c13c54); }
+    .gradient-bg { background: linear-gradient(135deg, #f5f7fa 0%, #eef2f7 100%); }
+    .shadow-custom { box-shadow: 0 10px 25px -5px rgba(154, 31, 64, 0.1), 0 8px 10px -6px rgba(154, 31, 64, 0.05); }
+    .focus-custom:focus { border-color: #9a1f40; box-shadow: 0 0 0 3px rgba(154, 31, 64, 0.2); }
+    .card-hover:hover { transform: translateY(-5px); transition: transform 0.3s ease; }
+    .stat-card { transition: all 0.3s ease; border-left: 4px solid #9a1f40; }
+    .stat-card:hover { box-shadow: 0 12px 28px -8px rgba(154, 31, 64, 0.15); }
+    .btn-export { transition: all 0.2s ease; }
+    .btn-export:hover { background-color: #f3f4f6; transform: translateY(-1px); }
+    .pagination-link { transition: all 0.2s ease; }
+    .table-header { background: linear-gradient(to right, #9a1f40, #c13c54); }
+    .filter-container { background-color: #ffffff; border-radius: 0.5rem; box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06); }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .fade-in { animation: fadeIn 0.5s ease forwards; }
+  </style>
+</head>
+<body class="gradient-bg min-h-screen pb-12">
+  <!-- Chargement des scripts JavaScript -->
+  <script src="js/document-preview.js"></script>
+  <script src="js/document-filters.js"></script>
+  <script src="js/date-updater.js"></script>
+  <script src="js/components/dashboard-comptable.js"></script>
+  
+  <script>
+    // Vérification de sécurité - Uniquement pour les professionnels
+    (function() {
+      const userRole = localStorage.getItem('userRole');
+      const authToken = localStorage.getItem('authToken');
+      
+      // Si pas de token ou pas de rôle, rediriger vers la page de connexion
+      if (!authToken || !userRole) {
+        window.location.href = 'login.html';
+        return;
+      }
+      
+      // Si le rôle n'est pas 'professionnel', accès refusé
+      if (userRole !== 'professionnel') {
+        alert('Accès non autorisé. Ce tableau de bord est réservé aux professionnels.');
+        window.location.href = 'login.html';
+        return;
+      }
+    })();
+  </script>
+  
+  <div class="gradient-header text-white p-4 shadow-md bg-gradient-to-r from-custom-red to-red-600">
+    <div class="max-w-6xl mx-auto flex justify-between items-center">
+      <div class="flex items-center">
+        <i class="fas fa-chart-line text-2xl mr-3"></i>
+        <h1 class="text-xl font-bold">FinExpert Comptabilité</h1>
+      </div>
+      <div class="flex items-center space-x-4">
+        <a href="#" class="hover:text-gray-200 transition flex items-center group">
+          <div class="w-8 h-8 rounded-full bg-white bg-opacity-20 flex items-center justify-center mr-1 group-hover:bg-opacity-30 transition-all">
+            <i class="far fa-bell text-lg"></i>
+          </div>
+          <span class="relative">
+            <span class="absolute top-0 right-0 -mt-1 -mr-1 flex items-center justify-center w-4 h-4 rounded-full bg-red-500 text-xs font-bold animate-pulse">3</span>
+          </span>
+        </a>
+        <a href="mon_compte.html" class="hover:text-gray-200 transition flex items-center group">
+          <div class="w-8 h-8 rounded-full bg-white bg-opacity-20 flex items-center justify-center mr-1 group-hover:bg-opacity-30 transition-all">
+            <i class="far fa-user-circle text-lg"></i>
+          </div>
+          <span>Mon compte</span>
+        </a>
+        <a href="login.html" class="hover:text-gray-200 transition flex items-center group">
+          <div class="w-8 h-8 rounded-full bg-white bg-opacity-20 flex items-center justify-center mr-1 group-hover:bg-opacity-30 transition-all">
+            <i class="fas fa-sign-out-alt text-lg"></i>
+          </div>
+          <span>Déconnexion</span>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <div class="max-w-6xl mx-auto mt-8 px-4">
+    <div class="bg-white rounded-lg shadow-custom overflow-hidden">
+      <div class="border-b border-gray-200 p-8">
+        <div class="flex items-center justify-between">
+          <div>
+            <h2 class="text-3xl font-semibold text-custom-red">Tableau de bord – Comptable</h2>
+            <p class="text-gray-600 mt-2">Consultez et gérez les documents envoyés par vos clients</p>
+          </div>            
+          <div class="hidden md:block">
+            <div class="text-right">
+              <p class="text-sm text-gray-500">Date du jour</p>
+              <p id="current-date" class="text-xl font-medium">26 juin 2025</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Notification -->
+      <div id="notification" class="mx-8 mt-4 p-3 rounded-lg text-sm font-medium hidden">
+        Statut mis à jour avec succès
+      </div>
+      
+      <!-- Statistiques -->
+      <div class="grid md:grid-cols-4 gap-6 p-8 border-b border-gray-200">
+        <div class="bg-white p-6 rounded-lg shadow-custom border border-gray-100 hover:shadow-lg transition-all stat-card fade-in" style="animation-delay: 0.1s;">
+          <div class="flex items-center">
+            <div class="rounded-full bg-red-50 p-4">
+              <i class="fas fa-users text-2xl text-custom-red"></i>
+            </div>
+            <div class="ml-5">
+              <p class="text-sm font-medium text-gray-500 uppercase tracking-wide">Clients actifs</p>
+              <div class="flex items-end">
+                <p id="clients-count" class="text-2xl font-bold">0</p>
+                <p class="text-gray-600 text-sm ml-2 font-medium">total</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="bg-white p-6 rounded-lg shadow-custom border border-gray-100 hover:shadow-lg transition-all stat-card fade-in" style="animation-delay: 0.2s;">
+          <div class="flex items-center">
+            <div class="rounded-full bg-red-50 p-4">
+              <i class="fas fa-file-alt text-2xl text-custom-red"></i>
+            </div>
+            <div class="ml-5">
+              <p class="text-sm font-medium text-gray-500 uppercase tracking-wide">À traiter</p>
+              <div class="flex items-end">
+                <p id="pending-count" class="text-2xl font-bold">0</p>
+                <div class="flex items-center ml-2">
+                  <i class="fas fa-exclamation-circle text-amber-600 mr-1"></i>
+                  <p class="text-amber-600 text-sm font-medium"><span id="urgent-count">0</span> urgents</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="bg-white p-6 rounded-lg shadow-custom border border-gray-100 hover:shadow-lg transition-all stat-card fade-in" style="animation-delay: 0.3s;">
+          <div class="flex items-center">
+            <div class="rounded-full bg-red-50 p-4">
+              <i class="fas fa-check-circle text-2xl text-custom-red"></i>
+            </div>
+            <div class="ml-5">
+              <p class="text-sm font-medium text-gray-500 uppercase tracking-wide">Traités</p>
+              <div class="flex items-end">
+                <p id="processed-count" class="text-2xl font-bold">0</p>
+                <div class="flex items-center ml-2">
+                  <i class="fas fa-calendar-check text-green-600 mr-1"></i>
+                  <p class="text-green-600 text-sm font-medium">cette semaine</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="bg-white p-6 rounded-lg shadow-custom border border-gray-100 hover:shadow-lg transition-all stat-card fade-in" style="animation-delay: 0.4s;">
+          <div class="flex items-center">
+            <div class="rounded-full bg-blue-50 p-4">
+              <i class="fas fa-chart-line text-2xl text-custom-red"></i>
+            </div>
+            <div class="ml-5">
+              <p class="text-sm font-medium text-gray-500 uppercase tracking-wide">Taux de traitement</p>
+              <div class="flex items-end">
+                <p id="processing-rate" class="text-2xl font-bold">0%</p>
+                <div class="flex items-center ml-2">
+                  <i class="fas fa-file-invoice text-blue-600 mr-1"></i>
+                  <p class="text-blue-600 text-sm font-medium">des documents</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="p-8">
+        <div class="bg-white rounded-lg shadow-sm p-6 mb-6 filter-container fade-in">
+          <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center border-b border-gray-100 pb-4 mb-4">
+            <h3 class="text-xl font-semibold text-gray-800 flex items-center mb-4 lg:mb-0">
+              <i class="fas fa-file-import mr-2 text-custom-red"></i>
+              Documents récents
+            </h3>
+            
+            <div class="flex items-center">
+              <div class="relative mr-2">
+                <input id="search-input" type="text" placeholder="Rechercher un document..." class="py-2 pl-10 pr-4 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-custom-red focus:border-custom-red w-full min-w-[250px]">
+                <i class="fas fa-search absolute left-3 top-2.5 text-gray-400"></i>
+              </div>
+              <button id="reset-filters" class="bg-gray-100 hover:bg-gray-200 text-gray-700 py-2 px-3 rounded-md transition-colors duration-200 flex items-center text-sm">
+                <i class="fas fa-redo-alt mr-1"></i> Réinitialiser
+              </button>
+            </div>
+          </div>
+          
+          <!-- Première ligne de filtres -->
+          <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-4">
+            <div>
+              <label for="status-filter" class="block text-sm font-medium text-gray-700 mb-1">Statut</label>
+              <div class="relative">
+                <select id="status-filter" class="pl-10 pr-4 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-custom-red focus:border-custom-red appearance-none bg-white w-full">
+                  <option value="">Tous les statuts</option>
+                  <option value="pending">En attente</option>
+                  <option value="processing">En traitement</option>
+                  <option value="validated">Traité</option>
+                  <option value="urgent">Urgent</option>
+                </select>
+                <i class="fas fa-filter absolute left-3 top-2.5 text-gray-400"></i>
+              </div>
+            </div>
+            
+            <div>
+              <label for="client-filter" class="block text-sm font-medium text-gray-700 mb-1">Client</label>
+              <div class="relative">
+                <select id="client-filter" class="pl-10 pr-4 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-custom-red focus:border-custom-red appearance-none bg-white w-full">
+                  <option value="">Tous les clients</option>
+                  <!-- Les clients seront ajoutés ici par JavaScript -->
+                </select>
+                <i class="fas fa-users absolute left-3 top-2.5 text-gray-400"></i>
+              </div>
+            </div>
+            
+            <div>
+              <label for="doctype-filter" class="block text-sm font-medium text-gray-700 mb-1">Type de document</label>
+              <div class="relative">
+                <select id="doctype-filter" class="pl-10 pr-4 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-custom-red focus:border-custom-red appearance-none bg-white w-full">
+                  <option value="">Tous les types</option>
+                  <option value="pdf">PDF</option>
+                  <option value="doc,docx">Word</option>
+                  <option value="xls,xlsx">Excel</option>
+                  <option value="jpg,jpeg,png,gif">Images</option>
+                  <option value="other">Autres</option>
+                </select>
+                <i class="fas fa-file-alt absolute left-3 top-2.5 text-gray-400"></i>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Deuxième ligne de filtres -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Période</label>
+            <div class="flex flex-wrap md:flex-nowrap items-center">
+              <div class="relative w-full md:w-auto mb-2 md:mb-0">
+                <input id="date-from" type="date" class="pl-10 pr-4 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-custom-red focus:border-custom-red bg-white w-full">
+                <i class="fas fa-calendar-alt absolute left-3 top-2.5 text-gray-400"></i>
+              </div>
+              <span class="mx-2 text-gray-600 hidden md:block">à</span>
+              <div class="relative w-full md:w-auto">
+                <input id="date-to" type="date" class="pl-10 pr-4 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-custom-red focus:border-custom-red bg-white w-full">
+                <i class="fas fa-calendar-alt absolute left-3 top-2.5 text-gray-400"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="overflow-x-auto bg-white rounded-lg shadow-sm">
+          <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gradient-to-r from-custom-red to-red-600 text-white table-header">
+              <tr>
+                <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
+                  <div class="flex items-center">
+                    <i class="fas fa-user-circle mr-1"></i> Client
+                  </div>
+                </th>
+                <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
+                  <div class="flex items-center">
+                    <i class="fas fa-file-alt mr-1"></i> Document
+                  </div>
+                </th>
+                <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
+                  <div class="flex items-center">
+                    <i class="fas fa-calendar-alt mr-1"></i> Date
+                  </div>
+                </th>
+                <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
+                  <div class="flex items-center">
+                    <i class="fas fa-tasks mr-1"></i> Statut
+                  </div>
+                </th>
+                <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
+                  <div class="flex items-center">
+                    <i class="fas fa-cog mr-1"></i> Action
+                  </div>
+                </th>
+              </tr>
+            </thead>
+            <tbody id="documents-table-body" class="bg-white divide-y divide-gray-200">
+              <tr>
+                <td colspan="5" class="px-6 py-8 text-center text-gray-500">
+                  <div class="flex flex-col items-center justify-center py-6">
+                    <i class="fas fa-spinner fa-spin text-custom-red text-4xl mb-3"></i>
+                    <p>Chargement des documents...</p>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="mt-4 bg-white rounded-lg p-4 flex flex-col md:flex-row justify-between items-center shadow-sm">
+          <div class="text-sm text-gray-500 mb-3 md:mb-0">
+            <span id="pagination-info">Chargement des données...</span>
+          </div>
+          <div class="flex space-x-2">
+            <button id="export-csv" class="bg-gray-100 hover:bg-gray-200 text-gray-700 py-2 px-4 rounded-md text-sm flex items-center btn-export">
+              <i class="fas fa-file-export mr-2 text-custom-red"></i> Exporter CSV
+            </button>
+            <button id="print-docs" class="bg-gray-100 hover:bg-gray-200 text-gray-700 py-2 px-4 rounded-md text-sm flex items-center btn-export">
+              <i class="fas fa-print mr-2 text-custom-red"></i> Imprimer
+            </button>
+          </div>
+        </div>
+        
+        <div class="mt-6 flex flex-col md:flex-row justify-between items-center bg-white rounded-lg p-4 shadow-sm">
+          <div class="text-sm text-gray-500 mb-3 md:mb-0">
+            Affichage de <span class="font-medium">1</span> à <span class="font-medium">3</span> sur <span class="font-medium">24</span> documents
+          </div>
+          <div class="flex space-x-1">
+            <a href="#" class="pagination-link px-3 py-2 rounded-md bg-gray-100 text-gray-700 hover:bg-gray-200 flex items-center justify-center min-w-[40px]">
+              <i class="fas fa-chevron-left"></i>
+            </a>
+            <a href="#" class="pagination-link px-3 py-2 rounded-md bg-custom-red text-white flex items-center justify-center min-w-[40px]">1</a>
+            <a href="#" class="pagination-link px-3 py-2 rounded-md bg-gray-100 text-gray-700 hover:bg-gray-200 flex items-center justify-center min-w-[40px]">2</a>
+            <a href="#" class="pagination-link px-3 py-2 rounded-md bg-gray-100 text-gray-700 hover:bg-gray-200 flex items-center justify-center min-w-[40px]">3</a>
+            <a href="#" class="pagination-link px-3 py-2 rounded-md bg-gray-100 text-gray-700 hover:bg-gray-200 flex items-center justify-center min-w-[40px]">
+              <i class="fas fa-chevron-right"></i>
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="bg-gray-50 p-8 border-t border-gray-200">
+        <div class="flex flex-col md:flex-row justify-between items-center text-sm text-gray-600">
+          <div class="mb-4 md:mb-0">
+            <p>© 2025 FinExpert Comptabilité. Tous droits réservés.</p>
+          </div>
+          <div class="flex flex-wrap justify-center space-x-4">
+            <a href="#" class="hover:text-custom-red transition mb-2 md:mb-0"><i class="fas fa-headset mr-1"></i> Assistance</a>
+            <a href="#" class="hover:text-custom-red transition mb-2 md:mb-0"><i class="fas fa-shield-alt mr-1"></i> Politique de confidentialité</a>
+            <a href="#" class="hover:text-custom-red transition mb-2 md:mb-0"><i class="fas fa-gavel mr-1"></i> Mentions légales</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
